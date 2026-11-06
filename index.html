@@ -353,7 +353,7 @@
               </div>
 
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="enableCoverPage" checked class="sr-only peer" onchange="toggleCoverPage()">
+                <input type="checkbox" id="enableCoverPage" class="sr-only peer" onchange="toggleCoverPage()">
                 <div class="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
               </label>
             </div>
@@ -687,8 +687,8 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
               id,
               name: file.name,
               src: e.target.result,
-              width: img.width,
-              height: img.height,
+              width: img.naturalWidth || img.width || 800,
+              height: img.naturalHeight || img.height || 600,
               rotation: 0,
               sizeBytes: file.size
             });
@@ -891,23 +891,49 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     async function processImageCanvas(item, qualityRatio, filterType) {
       return new Promise((resolve) => {
         const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
+        img.crossOrigin = 'anonymous';
 
-          const rot = item.rotation || 0;
-          if (rot === 90 || rot === 270) {
-            canvas.width = img.height;
-            canvas.height = img.width;
-          } else {
-            canvas.width = img.width;
-            canvas.height = img.height;
+        img.onload = () => {
+          const naturalW = img.naturalWidth || img.width || item.width || 1200;
+          const naturalH = img.naturalHeight || img.height || item.height || 1600;
+          const rot = ((item.rotation || 0) % 360 + 360) % 360;
+
+          // Limit max dimension to 2200px to avoid memory overflow and black canvas on mobile devices
+          const maxDim = 2200;
+          let drawW = naturalW;
+          let drawH = naturalH;
+          if (drawW > maxDim || drawH > maxDim) {
+            if (drawW > drawH) {
+              drawH = Math.round((drawH * maxDim) / drawW);
+              drawW = maxDim;
+            } else {
+              drawW = Math.round((drawW * maxDim) / drawH);
+              drawH = maxDim;
+            }
           }
+
+          const canvas = document.createElement('canvas');
+          if (rot === 90 || rot === 270) {
+            canvas.width = drawH;
+            canvas.height = drawW;
+          } else {
+            canvas.width = drawW;
+            canvas.height = drawH;
+          }
+
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+          // CRITICAL: Fill canvas background pure WHITE before drawing
+          // Prevents transparent pixels from being encoded as pitch black in JPEG
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
           ctx.save();
           ctx.translate(canvas.width / 2, canvas.height / 2);
           ctx.rotate((rot * Math.PI) / 180);
-          ctx.drawImage(img, -img.width / 2, -img.height / 2);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
           ctx.restore();
 
           if (filterType !== 'none') {
@@ -922,7 +948,7 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
                 
                 let factor;
                 if (y <= 100) {
-                  factor = 0.84; // Deepen text
+                  factor = 0.84;
                   data[i] = Math.max(0, r * factor);
                   data[i+1] = Math.max(0, g * factor);
                   data[i+2] = Math.max(0, b * factor);
@@ -933,13 +959,14 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
                   data[i+1] = Math.min(255, g * ratio);
                   data[i+2] = Math.min(255, b * ratio);
                 } else {
-                  const t = (y - 100) / (160 - 100);
+                  const t = (y - 100) / 60;
                   const smooth_t = t * t * (3 - 2 * t);
                   factor = 0.84 + smooth_t * ((245.0 / y) - 0.84);
                   data[i] = Math.min(255, r * factor);
                   data[i+1] = Math.min(255, g * factor);
                   data[i+2] = Math.min(255, b * factor);
                 }
+                data[i+3] = 255; // Always opaque
               }
             } else if (filterType === 'scanner') {
               // High-Precision Grayscale Scanner (Smooth Tone Mapping)
@@ -947,11 +974,11 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
                 const y = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
                 let out;
                 if (y <= 110) {
-                  out = y * 0.75; // Deepen dark strokes
+                  out = y * 0.75;
                 } else if (y >= 165) {
-                  out = 255 - (255 - y) * 0.2; // Clean white paper
+                  out = 255 - (255 - y) * 0.2;
                 } else {
-                  const t = (y - 110) / (165 - 110);
+                  const t = (y - 110) / 55;
                   const smooth_t = t * t * (3 - 2 * t);
                   const v110 = 110 * 0.75;
                   const v165 = 255 - (255 - 165) * 0.2;
@@ -961,6 +988,7 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
                 data[i] = v;
                 data[i+1] = v;
                 data[i+2] = v;
+                data[i+3] = 255; // Always opaque
               }
             } else if (filterType === 'bwpure') {
               // Pure B/N High Contrast Document Text
@@ -972,23 +1000,34 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
                 } else if (y > 150) {
                   out = 255;
                 } else {
-                  out = (y - 125) * (255 / 25);
+                  out = (y - 125) * 10.2;
                 }
                 data[i] = out;
                 data[i+1] = out;
                 data[i+2] = out;
+                data[i+3] = 255; // Always opaque
               }
             }
             ctx.putImageData(imgData, 0, 0);
           }
 
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', qualityRatio);
+          const q = Math.max(0.4, Math.min(0.98, qualityRatio));
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', q);
           resolve({
             dataUrl: compressedDataUrl,
             width: canvas.width,
             height: canvas.height
           });
         };
+
+        img.onerror = () => {
+          resolve({
+            dataUrl: item.src,
+            width: item.width || 800,
+            height: item.height || 600
+          });
+        };
+
         img.src = item.src;
       });
     }
@@ -1017,16 +1056,30 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       const headerTextVal = document.getElementById('headerText').value.trim();
       const pageNumPos = document.getElementById('pageNumberPos').value;
 
-      let doc;
-      if (selectedOrientation === 'landscape') {
-        doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: pageSize });
-      } else {
-        doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: pageSize });
+      // Determine initial orientation for page 1 cleanly without deletePage
+      let initialOrient = 'portrait';
+      if (!hasCover && images.length > 0) {
+        if (selectedOrientation === 'auto') {
+          const firstImg = images[0];
+          const isFlipped = (firstImg.rotation % 180 !== 0);
+          const firstW = isFlipped ? (firstImg.height || 1) : (firstImg.width || 1);
+          const firstH = isFlipped ? (firstImg.width || 1) : (firstImg.height || 1);
+          initialOrient = firstW > firstH ? 'landscape' : 'portrait';
+        } else {
+          initialOrient = selectedOrientation;
+        }
       }
 
-      let currentPageIndex = 0;
+      const doc = new jsPDF({
+        orientation: initialOrient,
+        unit: 'mm',
+        format: pageSize,
+        compress: true
+      });
+
       const totalPages = images.length;
 
+      // 1. Optional Academic Cover Page
       if (hasCover) {
         progressText.textContent = 'Generando carátula formal...';
         progressPercent.textContent = '5%';
@@ -1035,9 +1088,9 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
         const pWidth = doc.internal.pageSize.getWidth();
         const pHeight = doc.internal.pageSize.getHeight();
         drawCoverPage(doc, pWidth, pHeight);
-        currentPageIndex++;
       }
 
+      // 2. Process and append each photo page
       for (let i = 0; i < images.length; i++) {
         const item = images[i];
         const pct = Math.round(((i + 1) / images.length) * 85) + (hasCover ? 5 : 0);
@@ -1055,18 +1108,11 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
           pageOrient = selectedOrientation;
         }
 
-        if (currentPageIndex > 0) {
+        // Add page: if cover exists, every image is added to a fresh page.
+        // If no cover, image 0 uses the initial document page (already created with initialOrient).
+        if (hasCover || i > 0) {
           doc.addPage(pageSize, pageOrient);
-        } else {
-          if (doc.internal.pageSize.getWidth() > doc.internal.pageSize.getHeight() && pageOrient === 'portrait') {
-            doc.deletePage(1);
-            doc.addPage(pageSize, 'portrait');
-          } else if (doc.internal.pageSize.getWidth() < doc.internal.pageSize.getHeight() && pageOrient === 'landscape') {
-            doc.deletePage(1);
-            doc.addPage(pageSize, 'landscape');
-          }
         }
-        currentPageIndex++;
 
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
@@ -1092,6 +1138,7 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
           renderY = margin + (headerTextVal ? 6 : 0) + ((maxH - renderH) / 2);
         }
 
+        // Render clean processed image
         doc.addImage(processed.dataUrl, 'JPEG', renderX, renderY, renderW, renderH);
 
         // Header
@@ -1102,7 +1149,7 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
           doc.text(headerTextVal, pageWidth / 2, 8, { align: 'center' });
         }
 
-        // Folio
+        // Folio / Page Number
         if (addPageNums) {
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(8.5);
@@ -1123,7 +1170,7 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       let filename = document.getElementById('pdfFilename').value.trim() || 'Documento_Final';
       filename = filename.replace(/\.pdf$/i, '') + '.pdf';
 
-      // Embed technical metadata inside the PDF structure (invisible on pages)
+      // Subtle personal engine metadata
       doc.setProperties({
         title: filename,
         subject: 'Documento PDF',
