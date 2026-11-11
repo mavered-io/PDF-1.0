@@ -168,9 +168,13 @@
           </svg>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
           <span class="font-bold text-base tracking-tight text-zinc-900">PDF Studio</span>
-          </div>
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 text-zinc-600 border border-zinc-200/80">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Yectlin <span class="text-zinc-400">by</span> <strong class="text-zinc-700 font-semibold">mavered</strong></span>
+          </span>
+        </div>
       </div>
 
       <!-- Right Pill Status -->
@@ -616,13 +620,43 @@
       <div class="flex items-center gap-2">
         <span class="font-semibold text-zinc-800">PDF Studio</span>
         <span>—</span>
-        <span>Digitalización y Maquetación Documental</span>
+        <span>Digitalización y Maquetación de Legajos</span>
       </div>
-      <div>
+      <div class="flex items-center gap-2 text-zinc-500">
+        <span>Hecho por <strong class="font-semibold text-zinc-800">Yectlin</strong> <span class="text-zinc-400">by</span> <strong class="font-semibold text-zinc-800">mavered</strong></span>
+        <span>•</span>
         <span>© 2026</span>
       </div>
     </div>
   </footer>
+
+  
+  <!-- Modern Modal & Toast System (MVRD UI) -->
+  <div id="customModalBackdrop" class="fixed inset-0 z-50 bg-zinc-950/40 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+    <div id="customModalCard" class="bg-white rounded-2xl shadow-2xl border border-zinc-100 max-w-sm w-full p-6 text-center transform scale-95 transition-all duration-200 flex flex-col items-center">
+      
+      <!-- Icon Container -->
+      <div id="customModalIcon" class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-colors"></div>
+
+      <!-- Title & Message -->
+      <h3 id="customModalTitle" class="text-base font-bold text-zinc-900 tracking-tight"></h3>
+      <p id="customModalMessage" class="text-xs sm:text-sm text-zinc-500 mt-2 leading-relaxed max-w-xs"></p>
+
+      <!-- Action Buttons -->
+      <div class="mt-6 flex items-center justify-center gap-3 w-full">
+        <button id="customModalCancelBtn" class="flex-1 px-4 py-2.5 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition cursor-pointer">
+          Cancelar
+        </button>
+        <button id="customModalConfirmBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer">
+          Aceptar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
 
   <!-- ============================================================ -->
   <!-- JAVASCRIPT LOGIC (100% EPHEMERAL & CLIENT-SIDE)              -->
@@ -638,9 +672,187 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     }
 
     // Discreet Engine Signature
-    console.log('%c PDF Studio (MVRD Engine) · 100% Client-Side ', 'background: #111315; color: #E4E7EB; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px;');
+    console.log('%c PDF Studio · Yectlin by mavered · 100% Client-Side Engine ', 'background: #111315; color: #E4E7EB; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px;');
 
     // State
+    
+        // ==========================================
+    // MODERN MODAL & TOAST SYSTEM (MVRD UI)
+    // ==========================================
+    let modalResolve = null;
+
+    const MODAL_ICONS = {
+      danger: `
+        <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>`,
+      warning: `
+        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 18.75h.007v.008H12v-.008z" />
+        </svg>`,
+      info: `
+        <svg class="w-6 h-6 text-zinc-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+        </svg>`,
+      success: `
+        <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>`
+    };
+
+    function getModalElements() {
+      return {
+        backdrop: document.getElementById('customModalBackdrop'),
+        card: document.getElementById('customModalCard'),
+        icon: document.getElementById('customModalIcon'),
+        title: document.getElementById('customModalTitle'),
+        message: document.getElementById('customModalMessage'),
+        cancelBtn: document.getElementById('customModalCancelBtn'),
+        confirmBtn: document.getElementById('customModalConfirmBtn'),
+        toastContainer: document.getElementById('toastContainer')
+      };
+    }
+
+    function showCustomAlert({ title = 'Atención', message = '', type = 'info', confirmText = 'Entendido' }) {
+      return new Promise((resolve) => {
+        const els = getModalElements();
+        if (!els.backdrop || !els.card || !els.title || !els.message || !els.confirmBtn) {
+          alert(`${title}\n\n${message}`);
+          resolve();
+          return;
+        }
+
+        modalResolve = resolve;
+        els.title.textContent = title;
+        els.message.textContent = message;
+        els.confirmBtn.textContent = confirmText;
+        if (els.cancelBtn) els.cancelBtn.classList.add('hidden');
+
+        if (els.icon) {
+          els.icon.innerHTML = MODAL_ICONS[type] || MODAL_ICONS.info;
+          if (type === 'danger') {
+            els.icon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-rose-50 ring-8 ring-rose-50/50';
+            els.confirmBtn.className = 'w-full px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition cursor-pointer';
+          } else if (type === 'warning') {
+            els.icon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-amber-50 ring-8 ring-amber-50/50';
+            els.confirmBtn.className = 'w-full px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer';
+          } else if (type === 'success') {
+            els.icon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-emerald-50 ring-8 ring-emerald-50/50';
+            els.confirmBtn.className = 'w-full px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition cursor-pointer';
+          } else {
+            els.icon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-zinc-100 ring-8 ring-zinc-50';
+            els.confirmBtn.className = 'w-full px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer';
+          }
+        }
+
+        els.backdrop.classList.remove('opacity-0', 'pointer-events-none');
+        els.card.classList.remove('scale-95');
+        els.card.classList.add('scale-100');
+
+        els.confirmBtn.onclick = () => closeCustomModal(true);
+      });
+    }
+
+    function showCustomConfirm({ title = '¿Estás seguro?', message = '', confirmText = 'Aceptar', cancelText = 'Cancelar', danger = false }) {
+      return new Promise((resolve) => {
+        const els = getModalElements();
+        if (!els.backdrop || !els.card || !els.title || !els.message || !els.confirmBtn) {
+          const res = confirm(`${title}\n\n${message}`);
+          resolve(res);
+          return;
+        }
+
+        modalResolve = resolve;
+        els.title.textContent = title;
+        els.message.textContent = message;
+        els.confirmBtn.textContent = confirmText;
+        if (els.cancelBtn) {
+          els.cancelBtn.textContent = cancelText;
+          els.cancelBtn.classList.remove('hidden');
+        }
+
+        const type = danger ? 'danger' : 'warning';
+        if (els.icon) {
+          els.icon.innerHTML = MODAL_ICONS[type];
+          if (danger) {
+            els.icon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-rose-50 ring-8 ring-rose-50/50';
+            els.confirmBtn.className = 'flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition cursor-pointer';
+          } else {
+            els.icon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-amber-50 ring-8 ring-amber-50/50';
+            els.confirmBtn.className = 'flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer';
+          }
+        }
+
+        els.backdrop.classList.remove('opacity-0', 'pointer-events-none');
+        els.card.classList.remove('scale-95');
+        els.card.classList.add('scale-100');
+
+        els.confirmBtn.onclick = () => closeCustomModal(true);
+        if (els.cancelBtn) {
+          els.cancelBtn.onclick = () => closeCustomModal(false);
+        }
+      });
+    }
+
+    function closeCustomModal(result) {
+      const els = getModalElements();
+      if (els.backdrop) {
+        els.backdrop.classList.add('opacity-0', 'pointer-events-none');
+      }
+      if (els.card) {
+        els.card.classList.remove('scale-100');
+        els.card.classList.add('scale-95');
+      }
+      if (modalResolve) {
+        modalResolve(result);
+        modalResolve = null;
+      }
+    }
+
+    // Keyboard support: Escape closes/cancels, Enter confirms
+    window.addEventListener('keydown', (e) => {
+      const backdrop = document.getElementById('customModalBackdrop');
+      if (backdrop && !backdrop.classList.contains('pointer-events-none')) {
+        if (e.key === 'Escape') {
+          closeCustomModal(false);
+        } else if (e.key === 'Enter') {
+          closeCustomModal(true);
+        }
+      }
+    });
+
+    // Toast Notification System
+    function showToast(message, type = 'info', duration = 3200) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl bg-zinc-900 text-white text-xs font-medium shadow-xl border border-zinc-800 transform translate-y-3 opacity-0 transition-all duration-200';
+
+      let iconSvg = '';
+      if (type === 'success') {
+        iconSvg = `<svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`;
+      } else if (type === 'warning') {
+        iconSvg = `<svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>`;
+      } else {
+        iconSvg = `<svg class="w-4 h-4 text-sky-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>`;
+      }
+
+      toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-3', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 250);
+      }, duration);
+    }
+
     let images = [];
     let selectedOrientation = 'auto';
     let currentGlobalFilter = 'none';
@@ -862,7 +1074,11 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       });
 
       if (!validFiles.length) {
-        alert('Por favor selecciona imágenes (JPG, PNG), escaneos TIFF o documentos PDF.');
+        await showCustomAlert({
+          title: 'Formato no soportado',
+          message: 'Por favor selecciona imágenes (JPG, PNG), escaneos TIFF o documentos PDF.',
+          type: 'warning'
+        });
         return;
       }
 
@@ -948,7 +1164,11 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
         }
       } catch (err) {
         console.error('Error procesando archivo TIFF:', err);
-        alert(`No se pudo decodificar el archivo TIFF "${file.name}".`);
+        await showCustomAlert({
+          title: 'Error de lectura TIFF',
+          message: `No se pudo decodificar el archivo "${file.name}". Verifica que el archivo no esté dañado.`,
+          type: 'danger'
+        });
       }
     }
 
@@ -1029,7 +1249,11 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
         }
       } catch (err) {
         console.error('Error al procesar el archivo PDF:', err);
-        alert(`No se pudo leer el archivo "${file.name}".`);
+        await showCustomAlert({
+          title: 'Error de lectura',
+          message: `No se pudo abrir el archivo "${file.name}".`,
+          type: 'danger'
+        });
       }
     }
 
@@ -1135,10 +1359,18 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     }
 
     // Clear all
-    function clearAll() {
-      if (confirm('¿Vaciar todas las páginas cargadas?')) {
+    async function clearAll() {
+      const confirmed = await showCustomConfirm({
+        title: '¿Vaciar todas las páginas?',
+        message: `Se eliminarán las ${images.length} fojas cargadas de tu legajo. Esta acción no se puede deshacer.`,
+        confirmText: 'Sí, vaciar',
+        cancelText: 'Conservar hojas',
+        danger: true
+      });
+      if (confirmed) {
         images = [];
         updateUI();
+        showToast('Se vaciaron todas las páginas.', 'info');
       }
     }
 
@@ -1521,16 +1753,24 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       }
     }
 
-    function calcStartFromEnd() {
+    async function calcStartFromEnd() {
       const endVal = parseInt(document.getElementById('folioEndNumber')?.value, 10);
       if (isNaN(endVal)) {
-        alert('Por favor escribe el número final (ej. 1).');
+        await showCustomAlert({
+          title: 'Número final requerido',
+          message: 'Por favor escribe el número con el que debe terminar el foliado (por ejemplo: 1).',
+          type: 'warning'
+        });
         return;
       }
 
       const totalDocs = images.length;
       if (totalDocs === 0) {
-        alert('Por favor carga primero las hojas de tu legajo.');
+        await showCustomAlert({
+          title: 'Sin hojas cargadas',
+          message: 'Carga primero las hojas o escaneos de tu legajo para poder calcular el foliado.',
+          type: 'info'
+        });
         return;
       }
 
@@ -1552,7 +1792,11 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     // Generate PDF Master Routine
     async function generatePDF() {
       if (!images.length) {
-        alert('Por favor agrega al menos una fotografía o archivo PDF.');
+        await showCustomAlert({
+          title: 'Legajo vacío',
+          message: 'Por favor agrega al menos una fotografía, escaneo TIFF o documento PDF antes de generar el archivo.',
+          type: 'info'
+        });
         return;
       }
 
@@ -1815,13 +2059,14 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       // Subtle personal engine metadata
       doc.setProperties({
         title: filename,
-        subject: 'Documento PDF',
-        author: 'Mavered',
-        creator: 'MVRD Engine',
-        producer: 'PDF Studio'
+        subject: 'Documento Digitalizado y Foliado',
+        author: 'Yectlin by mavered',
+        creator: 'Yectlin Document Engine',
+        producer: 'PDF Studio (Yectlin by mavered)'
       });
 
       doc.save(filename);
+      showToast('¡Documento PDF generado y descargado!', 'success', 4000);
 
       setTimeout(() => {
         progressWrapper.classList.add('hidden');
@@ -1839,5 +2084,7 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       }
     });
 </script>
+
+  
 </body>
 </html>
