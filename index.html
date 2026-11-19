@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF Studio — Conversor de Fotos a PDF</title>
+  <title>PDF Studio — Digitalización, Foliado y Maquetación de Expedientes</title>
   
   <!-- Bespoke Minimalist Favicon (Tab Icon) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Crect width='32' height='32' rx='7' fill='%23111315'/%3E%3Crect x='0.5' y='0.5' width='31' height='31' rx='6.5' stroke='rgba(255,255,255,0.14)' stroke-width='1'/%3E%3Cpath d='M8 6C8 5.17157 8.67157 4.5 9.5 4.5H18.5L24 10V26C24 26.8284 23.3284 27.5 22.5 27.5H9.5C8.67157 27.5 8 26.8284 8 26V6Z' fill='%23FFFFFF'/%3E%3Cpath d='M18.5 4.5V9C18.5 9.55228 18.9477 10 19.5 10H24L18.5 4.5Z' fill='%23D4D4D8'/%3E%3Crect x='10.5' y='7' width='5.5' height='2' rx='1' fill='%23E11D48'/%3E%3Cpath d='M11 23V13.5L16 18L21 13.5V23' stroke='%23111315' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -186,24 +186,62 @@
           <span class="font-bold text-base tracking-tight text-zinc-900">PDF Studio</span>
           <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 text-zinc-600 border border-zinc-200/80">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span>Yectlin <span class="text-zinc-400">by</span> <strong class="text-zinc-700 font-semibold">mavered</strong></span>
+            <span>Developed by <strong class="text-zinc-800 font-semibold">Yectlin</strong></span>
           </span>
         </div>
       </div>
 
-      <!-- Right Pill Status -->
-      <div class="flex items-center gap-3">
+      <!-- Right Header Actions: Selector Superior de Modo de Trabajo (Convertidor por defecto, Foliar o Portada UBAM) -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="inline-flex p-1 bg-slate-100 rounded-xl gap-1 border border-slate-200/80 shadow-2xs">
+          <button type="button" onclick="setAppMode('converter')" id="modeBtn-converter" class="mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-900 bg-white shadow-2xs transition cursor-pointer flex items-center gap-1.5" title="Conversor directo a PDF sin foliado ni carátula">
+            <span>⚡ Convertidor PDF</span>
+          </button>
+          
+          <button type="button" onclick="setAppMode('folio')" id="modeBtn-folio" class="mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center gap-1.5" title="Activa la numeración y foliado oficial para expedientes">
+            <span>📑 Foliar</span>
+            <span id="badgeModeFolio" class="hidden text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700">Activo</span>
+          </button>
 
+          <button type="button" onclick="setAppMode('cover')" id="modeBtn-cover" class="mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center gap-1.5" title="Activa la carátula institucional de la escuela UBAM">
+            <svg id="headerCoverLockIcon" class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            <span>🎓 Portada UBAM</span>
+            <span id="badgeModeCover" class="hidden text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700">Activa</span>
+          </button>
+        </div>
 
-        <button id="clearAllBtn" onclick="clearAll()" class="hidden text-xs font-medium px-3 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 border border-rose-200 transition cursor-pointer">
-          Vaciar páginas
+        <button id="clearAllBtn" onclick="clearAll()" class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl text-rose-600 hover:bg-rose-50 border border-rose-200 transition cursor-pointer">
+          Vaciar fojas
         </button>
       </div>
 
     </div>
   </header>
 
-  <!-- Main Container: Fotos a PDF -->
+  <!-- Slim Context Status Bar -->
+  <div class="bg-white border-b border-slate-200/80 shadow-2xs">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-800 flex items-center gap-1.5 text-[11px]">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Modo:</span>
+        </span>
+        <span id="activeModeDescription" class="text-slate-600 text-[11px] font-medium">
+          Convertidor PDF estándar (conversión directa de fotos y documentos sin sellos ni carátula)
+        </span>
+      </div>
+      <div class="flex items-center gap-2 text-[11px] text-slate-400">
+        <span id="modeShortcutHint">Opciones arriba: Elige entre Portada UBAM o Foliar cuando lo requieras</span>
+      </div>
+    </div>
+  </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container: Digitalización y Maquetación de Expedientes -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-8">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
@@ -223,10 +261,10 @@
             
             <div class="space-y-1">
               <p class="text-sm font-semibold tracking-tight text-zinc-900">
-                Arrastra fotos, documentos PDF o escaneos TIFF aquí o <span class="text-zinc-900 underline underline-offset-4">haz clic para examinar</span>
+                Arrastre fojas, documentos PDF o escaneos TIFF aquí o <span class="text-zinc-900 underline underline-offset-4">haga clic para examinar</span>
               </p>
               <p class="text-xs text-zinc-500">
-                Soporta JPG, PNG, PDF y escaneos TIFF (optimizado para legajos de 250+ hojas) • O pega directamente con <kbd class="px-1.5 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-[11px] font-mono text-zinc-700 font-medium">Ctrl + V</kbd>
+                Soporta imágenes JPG, PNG, documentos PDF y escaneos TIFF multipágina • Diseñado para la digitalización de legajos y expedientes de alto volumen (250+ fojas) • Pegado rápido con <kbd class="px-1.5 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-[11px] font-mono text-zinc-700 font-medium">Ctrl + V</kbd>
               </p>
             </div>
           </div>
@@ -260,6 +298,35 @@
           </div>
         </div>
 
+        <!-- Real-Time Upload & Multi-Page Extraction Progress Card -->
+        <div id="uploadProgressCard" class="hidden rounded-2xl p-5 bg-white border border-zinc-200/90 shadow-sm flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center shadow-sm">
+                <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+              </div>
+              <div>
+                <h4 id="uploadProgressTitle" class="text-xs font-bold text-zinc-900">Procesando y cargando fojas...</h4>
+                <p id="uploadProgressSubtitle" class="text-[11px] text-zinc-500 font-medium">Iniciando lectura del documento...</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="uploadPageBadge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-700">0 fojas</span>
+              <span id="uploadProgressPercent" class="text-xs font-bold text-zinc-900 font-mono">0%</span>
+            </div>
+          </div>
+          <div class="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+            <div id="uploadProgressBar" class="h-full bg-zinc-900 transition-all duration-150 rounded-full w-0"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-zinc-400">
+            <span>✨ Extrayendo fojas y optimizando memoria para expedientes de gran volumen</span>
+            <span id="uploadItemDetail">Lectura en proceso</span>
+          </div>
+        </div>
+
         <!-- Selected Images List Header -->
         <div id="imageListHeader" class="hidden items-center justify-between px-1">
           <div class="flex items-center gap-2">
@@ -279,7 +346,7 @@
         <div id="emptyState" class="p-8 text-center rounded-2xl border border-dashed border-zinc-200 bg-white flex flex-col items-center justify-center gap-2">
           <span class="text-2xl">📑</span>
           <p class="text-xs font-medium text-zinc-500">Ningún archivo cargado todavía</p>
-          <p class="text-[11px] text-zinc-400">Tus páginas aparecerán aquí listas para ordenar, unir y paginar</p>
+          <p class="text-[11px] text-zinc-400">Las fojas digitalizadas se mostrarán aquí listas para su organización, foliado y compilación</p>
         </div>
 
         <!-- Image Grid (Sortable) -->
@@ -288,376 +355,306 @@
       </div>
 
       <!-- Right: Settings & Action Panel (5 cols) -->
-      <div class="lg:col-span-5 flex flex-col gap-4 w-full">
+      <div class="lg:col-span-5 flex flex-col gap-5 w-full">
         
-        <div class="rounded-2xl p-5 mini-card flex flex-col gap-5">
+        <!-- CARD 1: FOLIADO OFICIAL DE EXPEDIENTES (Oculto por defecto, se activa al elegir 'Foliar' arriba) -->
+        <div id="foliadoCard" class="rounded-2xl p-5 bg-white border border-slate-200/90 shadow-xs flex-col gap-4 hidden">
           
-          <!-- Segmented Options Navigation -->
-          <div class="flex items-center gap-1 p-1 bg-zinc-100 rounded-xl">
-            <button type="button" onclick="switchTab('format')" id="tabBtn-format" class="options-tab-btn active flex-1 py-1.5 rounded-lg text-xs font-semibold text-zinc-900 bg-white shadow-sm transition text-center cursor-pointer">
-              Formato
-            </button>
-            <button type="button" onclick="switchTab('cover')" id="tabBtn-cover" class="options-tab-btn flex-1 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 transition text-center cursor-pointer flex items-center justify-center gap-1.5">
-              <svg id="coverLockIcon" class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-              </svg>
-              <span>Portada</span>
-              <span id="coverBadgeDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 hidden"></span>
-            </button>
-            <button type="button" onclick="switchTab('academic')" id="tabBtn-academic" class="options-tab-btn flex-1 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 transition text-center cursor-pointer">
-              Foliado
-            </button>
-          </div>
-
-          <!-- Tab 1: Format Options -->
-          <div id="tabContent-format" class="flex flex-col gap-4">
-            
-            <!-- Page Size & Fitting -->
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1.5">
-                <label class="text-xs font-medium text-zinc-700">Tamaño de hoja</label>
-                <select id="pageSize" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer">
-                  <option value="letter" selected>Carta (Letter)</option>
-                  <option value="a4">A4 Estándar</option>
-                  <option value="legal">Oficio (Legal)</option>
-                </select>
+          <!-- Card Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+                #
               </div>
-
-              <div class="space-y-1.5">
-                <label class="text-xs font-medium text-zinc-700">Ajuste de foto</label>
-                <div class="grid grid-cols-2 gap-1 p-1 bg-zinc-100 rounded-xl">
-                  <button type="button" onclick="setImageFit('full')" id="fitBtn-full" class="fit-pill py-1.5 rounded-lg text-[11px] font-semibold text-zinc-900 bg-white shadow-sm transition text-center cursor-pointer" title="Llena toda la hoja">
-                    Toda la hoja
-                  </button>
-                  <button type="button" onclick="setImageFit('margin')" id="fitBtn-margin" class="fit-pill py-1.5 rounded-lg text-[11px] font-medium text-zinc-500 hover:text-zinc-900 transition text-center cursor-pointer" title="Deja margen blanco">
-                    Margen
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Orientation Selection -->
-            <div class="space-y-1.5" id="orientationWrapper">
-              <label class="text-xs font-medium text-zinc-700">Orientación</label>
-              <div class="grid grid-cols-3 gap-1.5 p-1 bg-zinc-100 rounded-xl">
-                <button type="button" onclick="setOrientation('auto')" id="orient-auto" class="orient-pill py-1.5 rounded-lg text-xs font-semibold text-zinc-900 bg-white shadow-sm transition text-center cursor-pointer">
-                  Auto
-                </button>
-                <button type="button" onclick="setOrientation('portrait')" id="orient-portrait" class="orient-pill py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 transition text-center cursor-pointer">
-                  Vertical
-                </button>
-                <button type="button" onclick="setOrientation('landscape')" id="orient-landscape" class="orient-pill py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 transition text-center cursor-pointer">
-                  Horizontal
-                </button>
-              </div>
-            </div>
-
-            <!-- Quality & Compression (with Moodle Preset) -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-medium text-zinc-700">Tamaño del archivo (Calidad)</label>
-                <span id="qualityVal" class="text-xs font-mono font-semibold text-zinc-800">80%</span>
-              </div>
-              
-              <input type="range" id="qualityRange" min="20" max="95" value="80" class="w-full h-1.5 cursor-pointer" />
-              
-              <div class="flex items-center gap-1.5 pt-1">
-                <button type="button" onclick="setQualityPreset(55)" class="text-[10px] font-medium px-2 py-1 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-200 transition cursor-pointer flex items-center gap-1">
-                  <span>Ligero (&lt;5MB)</span>
-                </button>
-                <button type="button" onclick="setQualityPreset(80)" class="text-[10px] font-medium px-2 py-1 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-200 transition cursor-pointer">
-                  Equilibrado
-                </button>
-                <button type="button" onclick="setQualityPreset(95)" class="text-[10px] font-medium px-2 py-1 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-200 transition cursor-pointer">
-                  Alta definición
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-                    <!-- Tab 2: Official UBAM Cover Page Options -->
-          <div id="tabContent-cover" class="hidden flex flex-col gap-4">
-            
-            <!-- PANEL BLOQUEADO (Visible cuando !isCoverUnlocked) -->
-            <div id="coverLockPanel" class="flex flex-col items-center justify-center p-6 text-center bg-zinc-50 rounded-2xl border border-zinc-200 gap-3">
-              <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-600 ring-8 ring-amber-50/50">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                </svg>
-              </div>
-
               <div>
-                <h3 class="text-sm font-bold text-zinc-900 tracking-tight">Portada Institucional UBAM</h3>
-                <p class="text-xs text-zinc-500 mt-1 max-w-xs leading-relaxed">
-                  Esta sección está protegida. Ingresa la clave de autorización para ver y editar la carátula:
-                </p>
+                <h3 class="text-xs font-bold text-slate-900 tracking-tight">Foliado de Expediente</h3>
+                <p class="text-[11px] text-slate-500">Estampado digital para archivos oficiales</p>
               </div>
-
-              <form onsubmit="handleInlinePinSubmit(event)" class="w-full mt-2 flex flex-col gap-2.5 max-w-xs">
-                <div>
-                  <input type="password" id="inlinePinInput" maxlength="12" placeholder="Ingresa la clave..." autocomplete="off" class="w-full text-center tracking-widest font-mono text-sm py-2 px-3 rounded-xl border border-zinc-300 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition bg-white" />
-                  <p id="inlinePinError" class="text-[11px] text-rose-600 font-medium mt-1.5 hidden">Clave incorrecta. Acceso denegado.</p>
-                </div>
-
-                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                  </svg>
-                  <span>Desbloquear Portada</span>
-                </button>
-              </form>
             </div>
-
-            <!-- PANEL DESBLOQUEADO (Visible cuando isCoverUnlocked) -->
-            <div id="coverUnlockedPanel" class="hidden flex flex-col gap-4">
-              
-              <!-- Lock Status Bar -->
-              <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs">
-                <span class="inline-flex items-center gap-1.5 text-emerald-800 font-medium">
-                  <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                  </svg>
-                  <span>Acceso autorizado</span>
-                </span>
-                <button type="button" onclick="lockCoverPage()" class="text-[11px] text-zinc-600 hover:text-zinc-900 font-medium underline cursor-pointer">
-                  Bloquear acceso
-                </button>
-              </div>
-
-              <!-- Switch Enable Cover -->
-              <div class="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
-                <div>
-                  <p class="text-xs font-semibold text-zinc-900">Incluir mi Portada Oficial UBAM</p>
-                  <p class="text-[11px] text-zinc-500">Plantilla oficial con escudo UBAM y sello LIAF</p>
-                </div>
-
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" id="enableCoverPage" class="sr-only peer" onchange="toggleCoverPage()">
-                  <div class="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
-                </label>
-              </div>
-
-              <!-- Cover Input Fields -->
-              <div id="coverFields" class="flex flex-col gap-3">
-                
-                <!-- Institutional Badge -->
-                <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-600 flex flex-col gap-1">
-                  <span class="font-bold text-zinc-900">Universidad Bancaria de México</span>
-                  <span class="text-[11px]">Licenciatura en Informática Administrativa y Fiscal</span>
-                  <div class="flex items-center justify-between mt-1 pt-1 border-t border-zinc-200 text-[10px] text-zinc-500">
-                    <span>Alumno: <strong class="text-zinc-800">Durán Hernández Julio César</strong></span>
-                    <span>Teoloyucan, Méx.</span>
-                  </div>
-                </div>
-
-                <!-- Quick Subject & Teacher Preset Selector from Horario -->
-                <div class="space-y-1.5 p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-                  <label class="text-xs font-semibold text-zinc-800 flex items-center justify-between">
-                    <span>Materia y Maestro (Horario de clases)</span>
-                    <span class="text-[10px] text-zinc-400 font-normal">Auto-completar</span>
-                  </label>
-                  <select id="coursePresetSelect" onchange="applyCoursePreset()" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer bg-white">
-                    <option value="" disabled selected>Selecciona tu materia del horario...</option>
-                    <option value="bd2">Base de datos II • Sthefany Villarreal Jiménez</option>
-                    <option value="so1">Sistemas operativos I • Brenda Maritza González Cortés</option>
-                    <option value="arq">Arquitectura de computadoras • José de Jesús Olivera Tenorio</option>
-                    <option value="fin2">Finanzas II • Diana María Cabrera Astorga</option>
-                    <option value="sol">Solución de problemas y toma de decisiones • Sergio Peña Cabrera</option>
-                    <option value="ing7">Inglés VII • Mariana Solís Rodríguez</option>
-                    <option value="imp1">Impuestos I • Erika Beatriz Chimal Reyes</option>
-                  </select>
-                </div>
-
-                <div class="space-y-1">
-                  <label class="text-[11px] font-medium text-zinc-600">Materia / Asignatura</label>
-                  <input type="text" id="coverSubject" list="scheduleSubjects" value="Base de datos II" placeholder="Ej. Base de datos II" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
-                  <datalist id="scheduleSubjects">
-                    <option value="Base de datos II">
-                    <option value="Sistemas operativos I">
-                    <option value="Arquitectura de computadoras">
-                    <option value="Finanzas II">
-                    <option value="Solución de problemas y toma de decisiones">
-                    <option value="Inglés VII">
-                    <option value="Impuestos I">
-                  </datalist>
-                </div>
-
-                <div class="space-y-1">
-                  <label class="text-[11px] font-medium text-zinc-600">Docente / Catedrático</label>
-                  <input type="text" id="coverProf" list="scheduleTeachers" value="Sthefany Villarreal Jiménez" placeholder="Ej. Sthefany Villarreal Jiménez" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
-                  <datalist id="scheduleTeachers">
-                    <option value="Sthefany Villarreal Jiménez">
-                    <option value="Brenda Maritza González Cortés">
-                    <option value="José de Jesús Olivera Tenorio">
-                    <option value="Diana María Cabrera Astorga">
-                    <option value="Sergio Peña Cabrera">
-                    <option value="Mariana Solís Rodríguez">
-                    <option value="Erika Beatriz Chimal Reyes">
-                  </datalist>
-                </div>
-
-                <div class="space-y-1">
-                  <label class="text-[11px] font-medium text-zinc-600">Título del Trabajo / Tarea</label>
-                  <input type="text" id="coverTitle" value="Cuestionario teórico." placeholder="Ej. Cuestionario teórico / Práctica 1" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-semibold" />
-                </div>
-
-                <div class="space-y-1">
-                  <label class="text-[11px] font-medium text-zinc-600">Fecha de Entrega</label>
-                  <input type="text" id="coverDate" placeholder="Ej. NOVIEMBRE, 2026." class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
-                </div>
-
-                <!-- Collapsible for custom student name or location -->
-                <details class="text-[11px] text-zinc-500 border-t border-zinc-200 pt-2">
-                  <summary class="cursor-pointer font-medium text-zinc-700 hover:text-zinc-900 select-none">
-                    Editar alumno o lugar (Opcional si tu novia o compañeros la usan)
-                  </summary>
-                  <div class="mt-2 flex flex-col gap-2">
-                    <div class="space-y-0.5">
-                      <label class="text-[10px] text-zinc-500">Nombre del alumno</label>
-                      <input type="text" id="coverStudentName" value="Durán Hernández Julio César." class="w-full mini-input rounded-xl px-2.5 py-1.5 text-xs font-medium">
-                    </div>
-                    <div class="space-y-0.5">
-                      <label class="text-[10px] text-zinc-500">Lugar al pie</label>
-                      <input type="text" id="coverLocation" value="TEOLOYUCAN, ESTADO DE MÉXICO" class="w-full mini-input rounded-xl px-2.5 py-1.5 text-xs">
-                    </div>
-                  </div>
-                </details>
-
-                <p class="text-[11px] text-zinc-400 pt-1 leading-relaxed">
-                  ✓ Tu carátula oficial se genera en la página 1 con los sellos oficiales de alta resolución, barras laterales y tipografía institucional.
-                </p>
-              </div>
-
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/70">
+                Norma Archivo
+              </span>
+              <button type="button" onclick="setAppMode('converter')" class="text-slate-400 hover:text-slate-600 text-xs p-1" title="Cerrar foliado y volver a solo convertidor">✕</button>
             </div>
-
           </div>
 
-          <!-- Tab 3: Foliado & Numeración de Expedientes -->
-          <div id="tabContent-academic" class="hidden flex flex-col gap-4">
-            
-            <!-- Hidden inputs to preserve JS API and defaults -->
-            <input type="hidden" id="folioDesign" value="minimal" />
-            <input type="hidden" id="folioColor" value="black" />
-            <input type="hidden" id="folioStyle" value="number" />
-            <input type="hidden" id="folioWhitePatch" value="" />
-            <input type="hidden" id="headerText" value="" />
+          <!-- Hidden inputs to preserve JS API and defaults -->
+          <input type="hidden" id="folioDesign" value="minimal" />
+          <input type="hidden" id="folioColor" value="black" />
+          <input type="hidden" id="folioStyle" value="number" />
+          <input type="hidden" id="folioWhitePatch" value="" />
+          <input type="hidden" id="headerText" value="" />
 
-            <!-- Switch Foliado -->
-            <div class="flex items-center justify-between p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-              <div>
-                <p class="text-xs font-semibold text-zinc-900">Foliar páginas del expediente</p>
-                <p class="text-[11px] text-zinc-500">Estampa digital oficial para legajos y archivos</p>
-              </div>
-              <input type="checkbox" id="addPageNumbers" checked class="w-4 h-4 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-900 cursor-pointer" onchange="updateFolioPreview()" />
+          <!-- Switch Foliado -->
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 border border-slate-200/70">
+            <div>
+              <p class="text-xs font-semibold text-slate-900">Foliar fojas del expediente</p>
+              <p class="text-[11px] text-slate-500">Imprime numeración en cada página digitalizada</p>
             </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="addPageNumbers" class="sr-only peer" onchange="updateFolioPreview()">
+              <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+            </label>
+          </div>
 
-            <!-- Sentido del Foliado (Descendente / Ascendente) -->
-            <div class="space-y-1.5 p-3 rounded-xl bg-amber-50/70 border border-amber-200">
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-semibold text-amber-950">Sentido del foliado</label>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900">Norma de Archivo</span>
-              </div>
-              <select id="folioDirection" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer bg-white" onchange="updateFolioPreview()">
-                <option value="descending" selected>Descendente (Última hoja es la menor, primera es la mayor)</option>
-                <option value="ascending">Ascendente (De menor a mayor: 1, 2, 3...)</option>
-              </select>
-              <p class="text-[10px] text-amber-800">
-                En expedientes oficiales, la última hoja lleva el número más bajo y la primera el más alto.
-              </p>
+          <!-- Sentido del Foliado (Descendente / Ascendente) -->
+          <div class="space-y-1.5 p-3 rounded-xl bg-amber-50/60 border border-amber-200/70">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-semibold text-amber-950">Sentido del foliado</label>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-900">Regla Oficial</span>
             </div>
+            <select id="folioDirection" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer bg-white" onchange="updateFolioPreview()">
+              <option value="descending" selected>Descendente (Última hoja es la 1 • Mayor a menor)</option>
+              <option value="ascending">Ascendente (De menor a mayor: 1, 2, 3...)</option>
+            </select>
+            <p class="text-[10px] text-amber-800 leading-relaxed">
+              En expedientes institucionales la última foja lleva el número más bajo y la primera foja el número más alto.
+            </p>
+          </div>
 
-            <!-- Diseño Minimalista Fijo & Muestra -->
-            <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="w-7 h-7 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-mono font-bold text-xs">
-                  #
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-zinc-900">Diseño Minimalista</p>
-                  <p class="text-[11px] text-zinc-500">Tinta negra oficial • Fondo 100% transparente</p>
-                </div>
-              </div>
-              <div id="folioDesignPreviewBadge" class="py-1 px-3 rounded-lg font-mono font-bold text-sm tracking-tight text-zinc-900 bg-white border border-zinc-200 shadow-xs">
-                223
-              </div>
-            </div>
-
-            <!-- Posición del Folio -->
+          <!-- Posición del Folio & Estilo -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="space-y-1.5">
-              <label class="text-xs font-medium text-zinc-700">Posición del folio</label>
+              <label class="text-xs font-medium text-slate-700">Posición del folio</label>
               <select id="pageNumberPos" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer">
-                <option value="top-right" selected>Superior Derecha (Norma de Archivo)</option>
+                <option value="top-right" selected>Superior Derecha (Oficial)</option>
                 <option value="bottom-right">Inferior Derecha</option>
                 <option value="bottom-center">Inferior Centro</option>
                 <option value="top-center">Superior Centro</option>
               </select>
             </div>
 
-            <!-- Configuración del rango de números (Continuaciones de Legajos) -->
-            <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200 flex flex-col gap-3">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div class="space-y-1">
-                  <label class="text-xs font-medium text-zinc-800">Folio de la primera hoja:</label>
-                  <input type="number" id="folioStartNumber" value="1" min="1" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-semibold font-mono bg-white" oninput="updateFolioPreview()" />
-                </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-medium text-slate-700">Tipografía y tinta</label>
+              <div class="py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 flex items-center justify-between">
+                <span>Minimalista (Negro)</span>
+                <span class="font-mono font-bold text-xs bg-white px-2 py-0.5 rounded border border-slate-200 shadow-2xs"># 228</span>
+              </div>
+            </div>
+          </div>
 
-                <div class="space-y-1">
-                  <label class="text-xs font-medium text-zinc-800">¿Conoces el folio final (menor)?</label>
-                  <div class="flex items-center gap-1.5">
-                    <input type="number" id="folioEndNumber" placeholder="ej. 1" min="1" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium font-mono bg-white" />
-                    <button type="button" onclick="calcStartFromEnd()" class="px-2.5 py-2 rounded-xl text-xs font-medium bg-zinc-900 text-white hover:bg-zinc-800 transition whitespace-nowrap cursor-pointer" title="Calcular folio inicial automáticamente según las hojas cargadas">
-                      Calcular
-                    </button>
-                  </div>
-                </div>
+          <!-- Rango y Calculador Automático -->
+          <div class="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/70 flex flex-col gap-2.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-slate-800">Folio inicial (primera hoja):</label>
+                <input type="number" id="folioStartNumber" value="1" min="1" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-semibold font-mono bg-white" oninput="updateFolioPreview()" />
               </div>
 
-              <!-- Vista previa en vivo del rango -->
-              <div id="folioLivePreview" class="p-2 rounded-lg bg-zinc-100 text-[11px] text-zinc-700 font-medium flex items-center justify-between">
-                <span>Rango estimado:</span>
-                <span id="folioPreviewText" class="font-mono font-bold text-zinc-900">-</span>
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-slate-800">Folio final (menor):</label>
+                <div class="flex items-center gap-1.5">
+                  <input type="number" id="folioEndNumber" placeholder="ej. 1" min="1" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium font-mono bg-white" />
+                  <button type="button" onclick="calcStartFromEnd()" class="px-2.5 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition whitespace-nowrap cursor-pointer shadow-2xs" title="Calcular folio inicial automáticamente según las fojas cargadas">
+                    Calcular
+                  </button>
+                </div>
               </div>
             </div>
 
-            <!-- Opción: No foliar carátula -->
-            <div>
-              <label class="flex items-center gap-2.5 p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 cursor-pointer" onchange="updateFolioPreview()">
-                <input type="checkbox" id="folioSkipFirst" checked class="w-3.5 h-3.5 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-900 cursor-pointer" />
+            <!-- Vista previa en vivo del rango -->
+            <div id="folioLivePreview" class="p-2.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 font-medium flex items-center justify-between shadow-2xs">
+              <span class="text-[11px] text-slate-500">Rango calculado:</span>
+              <span id="folioPreviewText" class="font-mono font-bold text-slate-900 text-xs">-</span>
+            </div>
+          </div>
+
+          <!-- Checkbox: No foliar carátula -->
+          <div>
+            <label class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-slate-200/80 cursor-pointer hover:bg-slate-50 transition" onchange="updateFolioPreview()">
+              <input type="checkbox" id="folioSkipFirst" checked class="w-4 h-4 rounded text-slate-900 border-slate-300 focus:ring-slate-900 cursor-pointer" />
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-slate-800">No foliar la primera hoja (Carátula)</span>
+                <span class="text-[10px] text-slate-400">Conserva la portada institucional o de expediente sin sello encima</span>
+              </div>
+            </label>
+          </div>
+
+        </div>
+
+        <!-- CARD UBAM COVER SUMMARY (Visible únicamente cuando se elige 'Portada UBAM' arriba) -->
+        <div id="ubamSummaryCard" class="hidden rounded-2xl p-4 bg-gradient-to-br from-indigo-50/70 via-white to-indigo-50/30 border border-indigo-200/80 shadow-xs flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-indigo-900 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+                🎓
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-indigo-950">Carátula Institucional UBAM</h4>
+                <p id="ubamCardSummaryText" class="text-[11px] text-indigo-700 font-medium">Base de datos II • Sthefany Villarreal Jiménez</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="openCoverModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-indigo-900 border border-indigo-200 hover:bg-indigo-50 transition cursor-pointer shadow-2xs flex items-center gap-1">
+                <span>Editar datos</span>
+                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+              </button>
+              <button type="button" onclick="setAppMode('converter')" class="text-slate-400 hover:text-slate-600 text-xs p-1" title="Quitar carátula y volver a solo convertidor">✕</button>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-indigo-800/80 border-t border-indigo-100 pt-2 font-medium">
+            <span>Sustentante: Durán Hernández Julio César</span>
+            <span class="text-emerald-700 font-bold flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Incluida en foja 1</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- CARD 2: PARÁMETROS DE MAQUETACIÓN -->
+        <div id="maquetacionCard" class="rounded-2xl p-5 bg-white border border-slate-200/90 shadow-xs flex flex-col gap-4">
+          
+          <!-- Card Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xs font-bold text-slate-900 tracking-tight">Parámetros de Maquetación</h3>
+                <p class="text-[11px] text-slate-500">Hoja, encuadre y compresión del archivo</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Page Size & Fitting -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1.5">
+              <label class="text-xs font-medium text-slate-700">Tamaño de hoja</label>
+              <select id="pageSize" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer">
+                <option value="letter" selected>Carta (Letter)</option>
+                <option value="a4">A4 Estándar</option>
+                <option value="legal">Oficio (Legal)</option>
+              </select>
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-xs font-medium text-slate-700">Ajuste de foja</label>
+              <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl">
+                <button type="button" onclick="setImageFit('full')" id="fitBtn-full" class="fit-pill py-1.5 rounded-lg text-[11px] font-semibold text-slate-900 bg-white shadow-2xs transition text-center cursor-pointer" title="Llena toda la hoja">
+                  Toda la hoja
+                </button>
+                <button type="button" onclick="setImageFit('margin')" id="fitBtn-margin" class="fit-pill py-1.5 rounded-lg text-[11px] font-medium text-slate-500 hover:text-slate-900 transition text-center cursor-pointer" title="Deja margen blanco">
+                  Margen
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Orientation -->
+          <div class="space-y-1.5" id="orientationWrapper">
+            <label class="text-xs font-medium text-slate-700">Orientación</label>
+            <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl">
+              <button type="button" onclick="setOrientation('auto')" id="orient-auto" class="orient-pill py-1.5 rounded-lg text-xs font-semibold text-slate-900 bg-white shadow-2xs transition text-center cursor-pointer">
+                Auto
+              </button>
+              <button type="button" onclick="setOrientation('portrait')" id="orient-portrait" class="orient-pill py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition text-center cursor-pointer">
+                Vertical
+              </button>
+              <button type="button" onclick="setOrientation('landscape')" id="orient-landscape" class="orient-pill py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition text-center cursor-pointer">
+                Horizontal
+              </button>
+            </div>
+          </div>
+
+          <!-- Quality & Compression -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-medium text-slate-700">Calidad y peso del archivo</label>
+              <span id="qualityVal" class="text-xs font-mono font-semibold text-slate-800">80%</span>
+            </div>
+            
+            <input type="range" id="qualityRange" min="20" max="95" value="80" class="w-full h-1.5 cursor-pointer" />
+            
+            <div class="flex items-center gap-1.5 pt-1">
+              <button type="button" onclick="setQualityPreset(55)" class="text-[10px] font-medium px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition cursor-pointer">
+                Ligero (&lt;5MB)
+              </button>
+              <button type="button" onclick="setQualityPreset(80)" class="text-[10px] font-medium px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition cursor-pointer">
+                Equilibrado
+              </button>
+              <button type="button" onclick="setQualityPreset(95)" class="text-[10px] font-medium px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition cursor-pointer">
+                Alta definición
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CARD 3: EXPORTACIÓN Y GUARDADO -->
+        <div class="rounded-2xl p-5 bg-white border border-slate-200/90 shadow-xs flex flex-col gap-4">
+          
+          <!-- Card Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+                💾
+              </div>
+              <div>
+                <h3 class="text-xs font-bold text-slate-900 tracking-tight">Exportación y Destino</h3>
+                <p class="text-[11px] text-slate-500">Generación del archivo final digitalizado</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filename -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-medium text-slate-700">Nombre del archivo resultante</label>
+            <div class="relative flex items-center">
+              <input type="text" id="pdfFilename" value="Documento_Final" placeholder="Nombre_del_documento" class="w-full mini-input rounded-xl pl-3 pr-12 py-2 text-xs font-medium font-mono" />
+              <span class="absolute right-3 text-xs font-medium text-slate-400 pointer-events-none">.pdf</span>
+            </div>
+          </div>
+
+          <!-- Destination Selector -->
+          <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                <span>📁</span>
+                <span>Destino de guardado</span>
+              </label>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">PC / USB / Móvil</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <label class="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200 cursor-pointer hover:border-slate-300 transition shadow-2xs">
+                <input type="radio" name="saveDestinationMode" value="ask" checked class="w-3.5 h-3.5 text-slate-900 focus:ring-slate-900 accent-slate-900 cursor-pointer" />
                 <div class="flex flex-col">
-                  <span class="text-xs font-medium text-zinc-800">No foliar la primera hoja (Carátula)</span>
-                  <span class="text-[10px] text-zinc-400">Respeta la carátula de expediente sin imprimirle folio encima</span>
+                  <span class="font-bold text-slate-900 text-xs">Elegir carpeta</span>
+                  <span class="text-[10px] text-slate-500">Abre "Guardar como..."</span>
+                </div>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200 cursor-pointer hover:border-slate-300 transition shadow-2xs">
+                <input type="radio" name="saveDestinationMode" value="direct" class="w-3.5 h-3.5 text-slate-900 focus:ring-slate-900 accent-slate-900 cursor-pointer" />
+                <div class="flex flex-col">
+                  <span class="font-bold text-slate-900 text-xs">Descarga directa</span>
+                  <span class="text-[10px] text-slate-500">A carpeta Descargas</span>
                 </div>
               </label>
             </div>
-
           </div>
 
-          <!-- PDF Output Filename -->
-          <div class="space-y-1.5 pt-2 border-t border-zinc-200">
-            <label class="text-xs font-medium text-zinc-700">Nombre del archivo resultante</label>
-            <div class="relative flex items-center">
-              <input type="text" id="pdfFilename" value="Documento_Final" placeholder="Nombre_del_documento" class="w-full mini-input rounded-xl pl-3 pr-12 py-2 text-xs font-medium font-mono" />
-              <span class="absolute right-3 text-xs font-medium text-zinc-400 pointer-events-none">.pdf</span>
-            </div>
-          </div>
-
-          <!-- Primary Generate PDF Action -->
-          <button id="generatePdfBtn" onclick="generatePDF()" class="w-full py-3 px-4 rounded-xl text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.99] transition shadow-sm cursor-pointer flex items-center justify-center gap-2">
+          <!-- Generate PDF Button -->
+          <button id="generatePdfBtn" onclick="generatePDF()" class="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 active:scale-[0.99] transition shadow-sm cursor-pointer flex items-center justify-center gap-2">
             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
             </svg>
-            <span>Generar y Descargar PDF</span>
+            <span id="generatePdfBtnText">Generar y Guardar PDF</span>
           </button>
+          <p class="text-[10px] text-slate-400 text-center -mt-2">
+            💾 En PC permite seleccionar el directorio de destino • En móviles descarga o comparte
+          </p>
 
-          <!-- Progress Bar -->
-          <div id="progressWrapper" class="hidden space-y-1.5">
-            <div class="flex justify-between text-[11px] font-medium text-zinc-600">
+          <!-- Generation Progress Bar -->
+          <div id="progressWrapper" class="hidden space-y-1.5 pt-1">
+            <div class="flex justify-between text-[11px] font-medium text-slate-600">
               <span id="progressText">Creando tu archivo PDF...</span>
               <span id="progressPercent">0%</span>
             </div>
-            <div class="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-              <div id="progressBar" class="h-full bg-zinc-900 transition-all duration-200 w-0"></div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div id="progressBar" class="h-full bg-slate-900 transition-all duration-200 w-0 rounded-full"></div>
             </div>
           </div>
 
@@ -672,10 +669,10 @@
   <div id="mobileBar" class="lg:hidden fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-zinc-200 z-40 hidden items-center justify-between gap-3 shadow-lg">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 rounded-full bg-zinc-900"></span>
-      <span id="mobileCount" class="text-xs font-medium text-zinc-800">0 fotos</span>
+      <span id="mobileCount" class="text-xs font-medium text-zinc-800">0 fojas</span>
     </div>
     <button onclick="generatePDF()" class="py-2.5 px-5 rounded-xl text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 transition shadow-sm flex items-center gap-1.5">
-      <span>Descargar PDF</span>
+      <span>Generar y Guardar PDF</span>
     </button>
   </div>
 
@@ -685,18 +682,196 @@
       <div class="flex items-center gap-2">
         <span class="font-semibold text-zinc-800">PDF Studio</span>
         <span>—</span>
-        <span>Digitalización y Maquetación de Legajos</span>
+        <span>Digitalización, Foliado y Maquetación de Expedientes</span>
       </div>
       <div class="flex items-center gap-2 text-zinc-500">
-        <span>Hecho por <strong class="font-semibold text-zinc-800">Yectlin</strong> <span class="text-zinc-400">by</span> <strong class="font-semibold text-zinc-800">mavered</strong></span>
+        <span>Developed by <strong class="font-semibold text-zinc-800">Yectlin</strong></span>
         <span>•</span>
         <span>© 2026</span>
       </div>
     </div>
   </footer>
 
-  
-  <!-- Modern Modal & Toas
+  <!-- Modal Dedicado a Carátula Institucional UBAM (Completamente separado de Foliado) -->
+  <div id="coverModalBackdrop" style="display: none; z-index: 99990;" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm items-center justify-center p-4 transition-all duration-200">
+    <div id="coverModalCard" class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 transition-all duration-200 flex flex-col gap-4">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+            🎓
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 tracking-tight">Carátula Institucional UBAM</h3>
+            <p class="text-xs text-slate-500">Licenciatura en Informática Administrativa y Fiscal</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeCoverModal()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition cursor-pointer" title="Cerrar ventana">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- PANEL BLOQUEADO (Visible cuando !isCoverUnlocked) -->
+      <div id="coverLockPanel" class="flex flex-col items-center justify-center p-6 text-center bg-slate-50 rounded-2xl border border-slate-200 gap-3">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-600 ring-8 ring-amber-50/50">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-slate-900 tracking-tight">Acceso Protegido</h4>
+          <p class="text-xs text-slate-500 mt-1 max-w-xs leading-relaxed">
+            Ingresa la clave de autorización personal para acceder a los datos de la carátula universitaria:
+          </p>
+        </div>
+
+        <form onsubmit="handleInlinePinSubmit(event)" class="w-full mt-2 flex flex-col gap-2.5 max-w-xs">
+          <div>
+            <input type="password" id="inlinePinInput" maxlength="12" placeholder="Ingresa la clave..." autocomplete="off" class="w-full text-center tracking-widest font-mono text-sm py-2 px-3 rounded-xl border border-slate-300 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition bg-white" />
+            <p id="inlinePinError" class="text-[11px] text-rose-600 font-medium mt-1.5 hidden">Clave incorrecta. Acceso denegado.</p>
+          </div>
+
+          <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            <span>Desbloquear Carátula</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- PANEL DESBLOQUEADO (Visible cuando isCoverUnlocked) -->
+      <div id="coverUnlockedPanel" class="hidden flex flex-col gap-4">
+        
+        <!-- Lock Status Bar -->
+        <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs">
+          <span class="inline-flex items-center gap-1.5 text-emerald-800 font-semibold">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            <span>Acceso autorizado</span>
+          </span>
+          <button type="button" onclick="lockCoverPage()" class="text-xs text-slate-600 hover:text-slate-900 font-medium underline cursor-pointer">
+            Bloquear acceso
+          </button>
+        </div>
+
+        <!-- Switch Enable Cover -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-900">Incluir Portada Oficial UBAM en la primera foja</p>
+            <p class="text-[11px] text-slate-500">Plantilla con heráldica oficial, franja reglamentaria y datos de la materia</p>
+          </div>
+
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="enableCoverPage" class="sr-only peer" onchange="toggleCoverPage()">
+            <div class="w-10 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+          </label>
+        </div>
+
+        <!-- Cover Input Fields -->
+        <div id="coverFields" class="flex flex-col gap-3">
+          
+          <!-- Institutional Badge -->
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex flex-col gap-1">
+            <span class="font-bold text-slate-900">Universidad Bancaria de México</span>
+            <span class="text-[11px]">Licenciatura en Informática Administrativa y Fiscal</span>
+            <div class="flex items-center justify-between mt-1 pt-1 border-t border-slate-200 text-[10px] text-slate-500">
+              <span>Sustentante: <strong class="text-slate-800">Durán Hernández Julio César</strong></span>
+              <span>Teoloyucan, Méx.</span>
+            </div>
+          </div>
+
+          <!-- Quick Subject & Teacher Preset Selector from Horario -->
+          <div class="space-y-1.5 p-3 rounded-xl bg-indigo-50/50 border border-indigo-200/70">
+            <label class="text-xs font-bold text-indigo-950 flex items-center justify-between">
+              <span>📚 Materia y Docente (Horario Oficial)</span>
+              <span class="text-[10px] text-indigo-600 font-semibold px-2 py-0.5 rounded bg-indigo-100/70">Auto-completar</span>
+            </label>
+            <select id="coursePresetSelect" onchange="applyCoursePreset()" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer bg-white">
+              <option value="" disabled selected>Selecciona tu materia del horario...</option>
+              <option value="bd2">Base de datos II • Sthefany Villarreal Jiménez</option>
+              <option value="so1">Sistemas operativos I • Brenda Maritza González Cortés</option>
+              <option value="arq">Arquitectura de computadoras • José de Jesús Olivera Tenorio</option>
+              <option value="fin2">Finanzas II • Diana María Cabrera Astorga</option>
+              <option value="sol">Solución de problemas y toma de decisiones • Sergio Peña Cabrera</option>
+              <option value="ing7">Inglés VII • Mariana Solís Rodríguez</option>
+              <option value="imp1">Impuestos I • Erika Beatriz Chimal Reyes</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[11px] font-semibold text-slate-700">Materia / Asignatura</label>
+            <input type="text" id="coverSubject" list="scheduleSubjects" value="Base de datos II" placeholder="Ej. Base de datos II" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
+            <datalist id="scheduleSubjects">
+              <option value="Base de datos II">
+              <option value="Sistemas operativos I">
+              <option value="Arquitectura de computadoras">
+              <option value="Finanzas II">
+              <option value="Solución de problemas y toma de decisiones">
+              <option value="Inglés VII">
+              <option value="Impuestos I">
+            </datalist>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[11px] font-semibold text-slate-700">Docente / Catedrático</label>
+            <input type="text" id="coverProf" list="scheduleTeachers" value="Sthefany Villarreal Jiménez" placeholder="Ej. Sthefany Villarreal Jiménez" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
+            <datalist id="scheduleTeachers">
+              <option value="Sthefany Villarreal Jiménez">
+              <option value="Brenda Maritza González Cortés">
+              <option value="José de Jesús Olivera Tenorio">
+              <option value="Diana María Cabrera Astorga">
+              <option value="Sergio Peña Cabrera">
+              <option value="Mariana Solís Rodríguez">
+              <option value="Erika Beatriz Chimal Reyes">
+            </datalist>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="text-[11px] font-semibold text-slate-700">Título del Trabajo / Tarea</label>
+              <input type="text" id="coverTitle" value="Cuestionario teórico." placeholder="Ej. Cuestionario teórico / Práctica 1" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-semibold" />
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[11px] font-semibold text-slate-700">Fecha de Entrega</label>
+              <input type="text" id="coverDate" placeholder="Ej. NOVIEMBRE, 2026." class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
+            </div>
+          </div>
+
+          <!-- Collapsible for custom student name or location -->
+          <details class="text-[11px] text-slate-500 border-t border-slate-200 pt-2">
+            <summary class="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 select-none">
+              Personalizar sustentante o ubicación institucional
+            </summary>
+            <div class="mt-2 flex flex-col gap-2">
+              <div class="space-y-0.5">
+                <label class="text-[10px] text-slate-500">Nombre del sustentante</label>
+                <input type="text" id="coverStudentName" value="Durán Hernández Julio César." class="w-full mini-input rounded-xl px-2.5 py-1.5 text-xs font-medium">
+              </div>
+              <div class="space-y-0.5">
+                <label class="text-[10px] text-slate-500">Entidad federativa / Municipio</label>
+                <input type="text" id="coverLocation" value="TEOLOYUCAN, ESTADO DE MÉXICO" class="w-full mini-input rounded-xl px-2.5 py-1.5 text-xs">
+              </div>
+            </div>
+          </details>
+
+          <button type="button" onclick="closeCoverModal()" class="w-full mt-2 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center justify-center gap-2">
+            <span>Guardar Configuración y Volver</span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
   <!-- Modern Modal & Toast System (MVRD UI) -->
   <div id="customModalBackdrop" style="display: none; z-index: 99999;" class="fixed inset-0 bg-zinc-950/50 backdrop-blur-sm items-center justify-center p-4 transition-all duration-200">
     <div id="customModalCard" style="transform: scale(0.95);" class="bg-white rounded-2xl shadow-2xl border border-zinc-100 max-w-sm w-full p-6 text-center transition-all duration-200 flex flex-col items-center">
@@ -738,7 +913,7 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     }
 
     // Discreet Engine Signature
-    console.log('%c PDF Studio · Yectlin by mavered · 100% Client-Side Engine ', 'background: #111315; color: #E4E7EB; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px;');
+    console.log('%c PDF Studio · Developed by Yectlin · High-Capacity Archival Engine ', 'background: #111315; color: #E4E7EB; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px;');
 
     // State
     
@@ -957,9 +1132,9 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     const enableCoverPage = document.getElementById('enableCoverPage');
     const coverBadgeDot = document.getElementById('coverBadgeDot');
 
-    // Date Auto-Initialization for Cover
+    // Date Auto-Initialization for Cover & App Initialization
     window.addEventListener('DOMContentLoaded', () => {
-      toggleCoverPage();
+      setAppMode('converter');
       updateFolioPreview();
       const dateInput = document.getElementById('coverDate');
       if (dateInput && !dateInput.value) {
@@ -969,11 +1144,159 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       }
     });
 
-    // Tab switcher inside Options panel
-            // ==========================================
-    // PORTADA UBAM PIN PROTECTION (041107)
+    // ==========================================
+    // TOP WORKFLOW SELECTOR (Default Convertidor, Foliado o Portada UBAM)
+    // ==========================================
+    let currentAppMode = 'converter'; // 'converter' | 'folio' | 'cover'
+
+    function setAppMode(mode) {
+      currentAppMode = mode;
+
+      const btnConverter = document.getElementById('modeBtn-converter');
+      const btnFolio = document.getElementById('modeBtn-folio');
+      const btnCover = document.getElementById('modeBtn-cover');
+
+      const descEl = document.getElementById('activeModeDescription');
+      const foliadoCard = document.getElementById('foliadoCard');
+      const ubamSummaryCard = document.getElementById('ubamSummaryCard');
+      const maquetacionCard = document.getElementById('maquetacionCard');
+      const addPageNumbers = document.getElementById('addPageNumbers');
+      const enableCoverPage = document.getElementById('enableCoverPage');
+
+      const badgeFolio = document.getElementById('badgeModeFolio');
+      const badgeCover = document.getElementById('badgeModeCover');
+
+      const baseBtn = 'mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center gap-1.5';
+      const activeBtn = 'mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-900 bg-white shadow-2xs transition cursor-pointer flex items-center gap-1.5';
+
+      if (btnConverter) btnConverter.className = baseBtn;
+      if (btnFolio) btnFolio.className = baseBtn;
+      if (btnCover) btnCover.className = baseBtn;
+
+      if (mode === 'converter') {
+        if (btnConverter) btnConverter.className = activeBtn;
+        if (descEl) descEl.textContent = 'Convertidor PDF estándar (conversión directa de fotos y documentos sin sellos ni carátula)';
+        
+        if (maquetacionCard) maquetacionCard.classList.remove('hidden');
+        if (foliadoCard) foliadoCard.classList.add('hidden');
+        if (ubamSummaryCard) ubamSummaryCard.classList.add('hidden');
+        if (addPageNumbers) addPageNumbers.checked = false;
+        if (enableCoverPage) enableCoverPage.checked = false;
+
+        if (badgeFolio) badgeFolio.classList.add('hidden');
+        if (badgeCover) badgeCover.classList.add('hidden');
+
+        updateCoverHeaderStatus();
+      } else if (mode === 'folio') {
+        if (btnFolio) btnFolio.className = activeBtn + ' border border-indigo-200 text-indigo-950 font-bold';
+        if (descEl) descEl.textContent = 'Modo Foliado de Expediente (estampado digital numerado para legajos y archivo institucional)';
+        
+        // En modo foliado SOLO aparece la tarjeta de foliado (se oculta maquetación)
+        if (foliadoCard) foliadoCard.classList.remove('hidden');
+        if (maquetacionCard) maquetacionCard.classList.add('hidden');
+        if (ubamSummaryCard) ubamSummaryCard.classList.add('hidden');
+        if (addPageNumbers) addPageNumbers.checked = true;
+        if (enableCoverPage) enableCoverPage.checked = false;
+
+        if (badgeFolio) badgeFolio.classList.remove('hidden');
+        if (badgeCover) badgeCover.classList.add('hidden');
+
+        updateFolioPreview();
+        updateCoverHeaderStatus();
+        showToast('Modo Foliado activado: Se estamparán las fojas del expediente', 'info');
+      } else if (mode === 'cover') {
+        if (btnCover) btnCover.className = activeBtn + ' border border-slate-300 text-slate-900 font-bold';
+        if (descEl) descEl.textContent = 'Modo Carátula UBAM (portada oficial universitaria con heráldica y horario en la primera foja)';
+        
+        // En modo portada se muestra la carátula y se oculta maquetación y foliado
+        if (ubamSummaryCard) ubamSummaryCard.classList.remove('hidden');
+        if (maquetacionCard) maquetacionCard.classList.add('hidden');
+        if (foliadoCard) foliadoCard.classList.add('hidden');
+        if (addPageNumbers) addPageNumbers.checked = false;
+        if (enableCoverPage) enableCoverPage.checked = true;
+
+        if (badgeFolio) badgeFolio.classList.add('hidden');
+        if (badgeCover) badgeCover.classList.remove('hidden');
+
+        updateCoverHeaderStatus();
+        updateUbamSummary();
+        openCoverModal();
+        showToast('Modo Carátula UBAM activado', 'info');
+      }
+    }
+
+    function updateUbamSummary() {
+      const sub = document.getElementById('coverSubject')?.value || 'Materia no definida';
+      const prof = document.getElementById('coverProf')?.value || '';
+      const textEl = document.getElementById('ubamCardSummaryText');
+      if (textEl) {
+        textEl.textContent = `${sub}${prof ? ' • ' + prof : ''}`;
+      }
+    }
+
+    // ==========================================
+    // PORTADA UBAM MODAL & PIN PROTECTION (041107)
     // ==========================================
     let isCoverUnlocked = false;
+
+    function openCoverModal() {
+      const modal = document.getElementById('coverModalBackdrop');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      
+      const lockPanel = document.getElementById('coverLockPanel');
+      const unlockedPanel = document.getElementById('coverUnlockedPanel');
+      
+      if (isCoverUnlocked) {
+        if (lockPanel) lockPanel.classList.add('hidden');
+        if (unlockedPanel) unlockedPanel.classList.remove('hidden');
+      } else {
+        if (unlockedPanel) unlockedPanel.classList.add('hidden');
+        if (lockPanel) lockPanel.classList.remove('hidden');
+        setTimeout(() => {
+          const inp = document.getElementById('inlinePinInput');
+          if (inp) {
+            inp.value = '';
+            inp.focus();
+          }
+        }, 60);
+      }
+    }
+
+    function closeCoverModal() {
+      const modal = document.getElementById('coverModalBackdrop');
+      if (modal) modal.style.display = 'none';
+      updateCoverHeaderStatus();
+      updateUbamSummary();
+    }
+
+    function updateCoverHeaderStatus() {
+      const cb = document.getElementById('enableCoverPage');
+      const isEnabled = cb ? cb.checked : false;
+
+      const badgeCover = document.getElementById('badgeModeCover');
+      const headerLock = document.getElementById('headerCoverLockIcon');
+
+      if (badgeCover) {
+        if (isEnabled) {
+          badgeCover.classList.remove('hidden');
+        } else {
+          badgeCover.classList.add('hidden');
+        }
+      }
+
+      if (headerLock) {
+        if (isCoverUnlocked) {
+          headerLock.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />`;
+          headerLock.classList.remove('text-slate-400');
+          headerLock.classList.add('text-emerald-500');
+        } else {
+          headerLock.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />`;
+          headerLock.classList.remove('text-emerald-500');
+          headerLock.classList.add('text-slate-400');
+        }
+      }
+    }
 
     function handleInlinePinSubmit(e) {
       if (e) e.preventDefault();
@@ -986,19 +1309,13 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
         if (err) err.classList.add('hidden');
         if (input) input.value = '';
 
-        // Update lock icon on tab button to unlocked green
-        const lockIcon = document.getElementById('coverLockIcon');
-        if (lockIcon) {
-          lockIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />`;
-          lockIcon.classList.remove('text-zinc-400');
-          lockIcon.classList.add('text-emerald-500');
-        }
-
         // Show unlocked panel, hide locked panel
         document.getElementById('coverLockPanel')?.classList.add('hidden');
         document.getElementById('coverUnlockedPanel')?.classList.remove('hidden');
 
-        showToast('Acceso autorizado a Portada Institucional', 'success');
+        updateCoverHeaderStatus();
+        updateUbamSummary();
+        showToast('Acceso autorizado a Portada Institucional UBAM', 'success');
       } else {
         if (err) err.classList.remove('hidden');
         if (input) {
@@ -1010,57 +1327,24 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
 
     function lockCoverPage() {
       isCoverUnlocked = false;
-      const lockIcon = document.getElementById('coverLockIcon');
-      if (lockIcon) {
-        lockIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />`;
-        lockIcon.classList.remove('text-emerald-500');
-        lockIcon.classList.add('text-zinc-400');
-      }
-
       document.getElementById('coverUnlockedPanel')?.classList.add('hidden');
       document.getElementById('coverLockPanel')?.classList.remove('hidden');
 
-      showToast('Portada bloqueada con clave', 'info');
+      updateCoverHeaderStatus();
+      showToast('Portada protegida con clave', 'info');
     }
 
     function switchTab(tabId) {
-      ['format', 'cover', 'academic'].forEach(id => {
-        const contentEl = document.getElementById(`tabContent-${id}`);
-        const btnEl = document.getElementById(`tabBtn-${id}`);
-        if (contentEl) contentEl.classList.add('hidden');
-        if (btnEl) {
-          btnEl.classList.remove('active', 'text-zinc-900', 'bg-white', 'shadow-sm', 'font-semibold');
-          btnEl.classList.add('text-zinc-600', 'font-medium');
-        }
-      });
-
-      const targetContent = document.getElementById(`tabContent-${tabId}`);
-      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-      if (targetContent) targetContent.classList.remove('hidden');
-      if (activeBtn) {
-        activeBtn.classList.add('active', 'text-zinc-900', 'bg-white', 'shadow-sm', 'font-semibold');
-        activeBtn.classList.remove('text-zinc-600', 'font-medium');
-      }
-
-      // If switching to cover, handle lock/unlock panel state
       if (tabId === 'cover') {
-        const lockPanel = document.getElementById('coverLockPanel');
-        const unlockedPanel = document.getElementById('coverUnlockedPanel');
-        if (isCoverUnlocked) {
-          if (lockPanel) lockPanel.classList.add('hidden');
-          if (unlockedPanel) unlockedPanel.classList.remove('hidden');
-        } else {
-          if (unlockedPanel) unlockedPanel.classList.add('hidden');
-          if (lockPanel) lockPanel.classList.remove('hidden');
-          setTimeout(() => {
-            const inp = document.getElementById('inlinePinInput');
-            if (inp) inp.focus();
-          }, 50);
-        }
+        setAppMode('cover');
+      } else if (tabId === 'academic') {
+        setAppMode('folio');
+      } else {
+        setAppMode('converter');
       }
     }
 
-        // Horario Preset Data & Auto-fill
+    // Horario Preset Data & Auto-fill
     const SCHEDULE_COURSES = {
       'bd2': { subject: 'Base de datos II', prof: 'Sthefany Villarreal Jiménez' },
       'so1': { subject: 'Sistemas operativos I', prof: 'Brenda Maritza González Cortés' },
@@ -1080,15 +1364,23 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
         const profInput = document.getElementById('coverProf');
         if (subInput) subInput.value = course.subject;
         if (profInput) profInput.value = course.prof;
+        updateUbamSummary();
         showToast(`${course.subject} • ${course.prof}`, 'info');
       }
     }
 
     // Toggle Cover Page
     function toggleCoverPage() {
-      const isEnabled = enableCoverPage.checked;
-      coverFields.classList.toggle('hidden', !isEnabled);
-      coverBadgeDot.classList.toggle('hidden', !isEnabled);
+      const cb = document.getElementById('enableCoverPage');
+      const isEnabled = cb ? cb.checked : false;
+      const fields = document.getElementById('coverFields');
+      if (fields) fields.classList.toggle('hidden', !isEnabled);
+      const dot = document.getElementById('coverBadgeDot');
+      if (dot) dot.classList.toggle('hidden', !isEnabled);
+      const summaryCard = document.getElementById('ubamSummaryCard');
+      if (summaryCard) summaryCard.classList.toggle('hidden', !isEnabled);
+      updateCoverHeaderStatus();
+      updateUbamSummary();
     }
 
     // Global Filter Selection
@@ -1282,43 +1574,84 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       // Natural alphanumeric sort so scanned sequences (e.g. Escáner_1, Escáner_2... Escáner_10) stay strictly in order
       validFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 
-      const progressWrapper = document.getElementById('progressWrapper');
-      const progressText = document.getElementById('progressText');
-      const progressBar = document.getElementById('progressBar');
-      const progressPercent = document.getElementById('progressPercent');
+      // Elementos de la barra de progreso de carga (Visible en el área principal)
+      const uploadCard = document.getElementById('uploadProgressCard');
+      const uploadTitle = document.getElementById('uploadProgressTitle');
+      const uploadSubtitle = document.getElementById('uploadProgressSubtitle');
+      const uploadBar = document.getElementById('uploadProgressBar');
+      const uploadPercent = document.getElementById('uploadProgressPercent');
+      const uploadBadge = document.getElementById('uploadPageBadge');
+      const uploadDetail = document.getElementById('uploadItemDetail');
 
-      progressWrapper.classList.remove('hidden');
+      if (uploadCard) {
+        uploadCard.classList.remove('hidden');
+        uploadCard.classList.add('flex');
+        uploadBar.style.width = '0%';
+        uploadPercent.textContent = '0%';
+        uploadBadge.textContent = `${images.length} fojas`;
+      }
 
+      const initialCount = images.length;
       const totalFiles = validFiles.length;
+
       for (let i = 0; i < totalFiles; i++) {
         const file = validFiles[i];
-        const pct = Math.round(((i + 1) / totalFiles) * 100);
-        progressText.textContent = `Cargando archivo ${i + 1} de ${totalFiles}: "${file.name}"...`;
-        progressBar.style.width = `${pct}%`;
-        progressPercent.textContent = `${pct}%`;
-
-        // Small yield so the browser never hangs or triggers "script not responding"
-        await new Promise(r => setTimeout(r, 0));
-
         const name = file.name.toLowerCase();
+
+        if (uploadTitle) uploadTitle.textContent = `Procesando archivo ${i + 1} de ${totalFiles}: "${file.name}"`;
+        if (uploadSubtitle) uploadSubtitle.textContent = 'Preparando páginas...';
+        if (uploadDetail) uploadDetail.textContent = `Archivo ${i + 1} de ${totalFiles}`;
+
+        // Ceder el hilo para que el navegador dibuje de inmediato
+        await new Promise(r => setTimeout(r, 10));
+
         if (name.endsWith('.tif') || name.endsWith('.tiff') || file.type.includes('tiff')) {
-          await processTiffFile(file);
+          await processTiffFile(file, (p, totalP) => {
+            const overallPct = Math.round(((i + (p / totalP)) / totalFiles) * 100);
+            if (uploadSubtitle) uploadSubtitle.textContent = `Decodificando foja ${p} de ${totalP}... (${file.name})`;
+            if (uploadBar) uploadBar.style.width = `${overallPct}%`;
+            if (uploadPercent) uploadPercent.textContent = `${overallPct}%`;
+            if (uploadBadge) uploadBadge.textContent = `${images.length} fojas`;
+            if (uploadDetail) uploadDetail.textContent = `Foja ${p}/${totalP}`;
+          });
         } else if (name.endsWith('.pdf') || file.type === 'application/pdf') {
-          await extractPdfPages(file);
+          await extractPdfPages(file, (p, totalP) => {
+            const overallPct = Math.round(((i + (p / totalP)) / totalFiles) * 100);
+            if (uploadSubtitle) uploadSubtitle.textContent = `Extrayendo foja ${p} de ${totalP}... (${file.name})`;
+            if (uploadBar) uploadBar.style.width = `${overallPct}%`;
+            if (uploadPercent) uploadPercent.textContent = `${overallPct}%`;
+            if (uploadBadge) uploadBadge.textContent = `${images.length} fojas`;
+            if (uploadDetail) uploadDetail.textContent = `Foja ${p}/${totalP}`;
+          });
         } else {
+          const overallPct = Math.round(((i + 1) / totalFiles) * 100);
+          if (uploadSubtitle) uploadSubtitle.textContent = `Cargando imagen ${i + 1} de ${totalFiles}: "${file.name}"`;
+          if (uploadBar) uploadBar.style.width = `${overallPct}%`;
+          if (uploadPercent) uploadPercent.textContent = `${overallPct}%`;
           await processImageFile(file);
+          if (uploadBadge) uploadBadge.textContent = `${images.length} fojas`;
+          await new Promise(r => setTimeout(r, 5));
         }
       }
 
-      progressWrapper.classList.add('hidden');
-      progressBar.style.width = '0%';
-      progressPercent.textContent = '0%';
+      const addedCount = images.length - initialCount;
+      if (uploadCard) {
+        uploadBar.style.width = '100%';
+        uploadPercent.textContent = '100%';
+        if (uploadSubtitle) uploadSubtitle.textContent = `¡Listo! Se agregaron ${addedCount} fojas al legajo.`;
+        await new Promise(r => setTimeout(r, 400));
+        uploadCard.classList.add('hidden');
+        uploadCard.classList.remove('flex');
+        uploadBar.style.width = '0%';
+        uploadPercent.textContent = '0%';
+      }
 
       updateUI();
+      showToast(`¡Se cargaron ${addedCount} fojas! Total en legajo: ${images.length}`, 'success', 3500);
     }
 
-    // Process TIFF Scans (Multi-page or single-page)
-    async function processTiffFile(file) {
+    // Process TIFF Scans (Multi-page or single-page) with real-time page progress
+    async function processTiffFile(file, onProgress) {
       try {
         const arrayBuf = await file.arrayBuffer();
         if (typeof UTIF === 'undefined') {
@@ -1326,7 +1659,11 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
         }
 
         const ifds = UTIF.decode(arrayBuf);
-        for (let p = 0; p < ifds.length; p++) {
+        const totalFrames = ifds.length;
+        for (let p = 0; p < totalFrames; p++) {
+          if (onProgress) onProgress(p + 1, totalFrames);
+          await new Promise(r => setTimeout(r, 0));
+
           const ifd = ifds[p];
           UTIF.decodeImage(arrayBuf, ifd);
           const rgba = UTIF.toRGBA8(ifd);
@@ -1347,14 +1684,14 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
           const id = 'tiff_' + Math.random().toString(36).substr(2, 9);
           images.push({
             id,
-            name: file.name + (ifds.length > 1 ? ` (Pág. ${p + 1})` : ''),
+            name: file.name + (totalFrames > 1 ? ` (Pág. ${p + 1})` : ''),
             thumbSrc: thumbDataUrl,
             file: file,
             pageIndex: p,
             width: ifd.width,
             height: ifd.height,
             rotation: 0,
-            sizeBytes: Math.round(file.size / ifds.length),
+            sizeBytes: Math.round(file.size / totalFrames),
             isTiff: true,
             isPdf: false
           });
@@ -1400,8 +1737,8 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       });
     }
 
-    // Extract PDF Pages with Lightweight Thumbnails
-    async function extractPdfPages(file) {
+    // Extract PDF Pages with Lightweight Thumbnails and real-time page progress
+    async function extractPdfPages(file, onProgress) {
       try {
         const arrayBuffer = await file.arrayBuffer();
         const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
@@ -1409,6 +1746,10 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
         const numPages = pdfDoc.numPages;
 
         for (let p = 1; p <= numPages; p++) {
+          if (onProgress) onProgress(p, numPages);
+          // Yield de microtarea para no bloquear el navegador y animar la barra en cada foja
+          await new Promise(r => setTimeout(r, 0));
+
           const page = await pdfDoc.getPage(p);
           const viewport = page.getViewport({ scale: 1.8 });
           const canvas = document.createElement('canvas');
@@ -1559,15 +1900,15 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     async function clearAll() {
       const confirmed = await showCustomConfirm({
         title: '¿Vaciar todas las páginas?',
-        message: `Se eliminarán las ${images.length} fojas cargadas de tu legajo. Esta acción no se puede deshacer.`,
-        confirmText: 'Sí, vaciar',
-        cancelText: 'Conservar hojas',
+        message: `Se eliminarán las ${images.length} fojas cargadas del expediente actual. Esta acción no se puede deshacer.`,
+        confirmText: 'Sí, vaciar fojas',
+        cancelText: 'Conservar fojas',
         danger: true
       });
       if (confirmed) {
         images = [];
         updateUI();
-        showToast('Se vaciaron todas las páginas.', 'info');
+        showToast('Se han removido todas las fojas del expediente.', 'info');
       }
     }
 
@@ -1964,8 +2305,8 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       const totalDocs = images.length;
       if (totalDocs === 0) {
         await showCustomAlert({
-          title: 'Sin hojas cargadas',
-          message: 'Carga primero las hojas o escaneos de tu legajo para poder calcular el foliado.',
+          title: 'Sin fojas en el expediente',
+          message: 'Incorpore primero las fojas o escaneos del expediente para efectuar el cálculo del foliado.',
           type: 'info'
         });
         return;
@@ -1986,15 +2327,77 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       updateFolioPreview();
     }
 
-    // Generate PDF Master Routine
+    // Generador y Guardado Inteligente de PDF (PC con Explorador Nativo "Guardar como..." y Celular)
+    async function savePdfFallback(doc, rawFilename) {
+      const fullFilename = rawFilename.toLowerCase().endsWith('.pdf') ? rawFilename : `${rawFilename}.pdf`;
+      const pdfBlob = doc.output('blob');
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      // En Celular: Web Share API
+      if (isMobile && navigator.canShare) {
+        try {
+          const pdfFile = new File([pdfBlob], fullFilename, { type: 'application/pdf' });
+          if (navigator.canShare({ files: [pdfFile] })) {
+            await navigator.share({
+              files: [pdfFile],
+              title: fullFilename,
+              text: 'Documento PDF generado con PDF Studio'
+            });
+            showToast('¡Archivo compartido / guardado en celular!', 'success', 4000);
+            return true;
+          }
+        } catch (err) {
+          if (err.name === 'AbortError') return false;
+          console.warn('Web Share no disponible o cancelado, usando descarga estándar:', err);
+        }
+      }
+
+      // Descarga tradicional al navegador
+      doc.save(fullFilename);
+      showToast('¡Documento PDF descargado en tu carpeta de Descargas!', 'success', 4000);
+      return true;
+    }
+
     async function generatePDF() {
       if (!images.length) {
         await showCustomAlert({
-          title: 'Legajo vacío',
-          message: 'Por favor agrega al menos una fotografía, escaneo TIFF o documento PDF antes de generar el archivo.',
+          title: 'Expediente vacío',
+          message: 'Por favor incorpore al menos una foja, escaneo TIFF o documento PDF antes de compilar el expediente.',
           type: 'info'
         });
         return;
+      }
+
+      let filename = (document.getElementById('pdfFilename').value.trim() || 'Documento_Final');
+      filename = filename.replace(/\.pdf$/i, '') + '.pdf';
+
+      // Preferencia de destino: Elegir carpeta (ask) o Descarga directa (direct)
+      const saveMode = document.querySelector('input[name="saveDestinationMode"]:checked')?.value || 'ask';
+      let fileHandle = null;
+
+      // 1. EN PC: Si el modo es "Elegir carpeta" y el navegador soporta File System Access API
+      // CRUCIAL: Se ejecuta AQUÍ al inicio del clic para tener User Activation 100% válida y abrir la ventana de Windows
+      if (saveMode === 'ask' && typeof window.showSaveFilePicker === 'function') {
+        try {
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{
+              description: 'Documento PDF (*.pdf)',
+              accept: { 'application/pdf': ['.pdf'] }
+            }]
+          });
+          // Si el usuario especificó otro nombre en la ventana de Windows
+          if (fileHandle && fileHandle.name) {
+            filename = fileHandle.name;
+          }
+        } catch (err) {
+          // El usuario hizo clic en "Cancelar" o presionó Esc en la ventana de Windows
+          if (err.name === 'AbortError') {
+            showToast('Guardado cancelado. No se generó el PDF.', 'info', 3000);
+            return; // Cancelar sin gastar recursos de la máquina
+          }
+          console.warn('showSaveFilePicker cancelado o no disponible:', err);
+        }
       }
 
       const progressWrapper = document.getElementById('progressWrapper');
@@ -2250,20 +2653,43 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       progressPercent.textContent = '100%';
       progressBar.style.width = '100%';
 
-      let filename = document.getElementById('pdfFilename').value.trim() || 'Documento_Final';
-      filename = filename.replace(/\.pdf$/i, '') + '.pdf';
+      if (!fileHandle) {
+        filename = (document.getElementById('pdfFilename').value.trim() || 'Documento_Final').replace(/\.pdf$/i, '') + '.pdf';
+      }
 
-      // Subtle personal engine metadata
+      // Institutional engine metadata
       doc.setProperties({
         title: filename,
-        subject: 'Documento Digitalizado y Foliado',
-        author: 'Yectlin by mavered',
+        subject: 'Documento Digitalizado, Foliado y Compilado',
+        author: 'Developed by Yectlin',
         creator: 'Yectlin Document Engine',
-        producer: 'PDF Studio (Yectlin by mavered)'
+        producer: 'PDF Studio (Developed by Yectlin)'
       });
 
-      doc.save(filename);
-      showToast('¡Documento PDF generado y descargado!', 'success', 4000);
+      // 2. Guardar en la carpeta elegida por el usuario (o en Descargas / Celular)
+      if (fileHandle) {
+        try {
+          progressText.textContent = 'Escribiendo archivo en la carpeta elegida...';
+          const pdfBlob = doc.output('blob');
+          const writable = await fileHandle.createWritable();
+          await writable.write(pdfBlob);
+          await writable.close();
+          showToast(`¡PDF guardado con éxito en: "${fileHandle.name}"!`, 'success', 5000);
+
+          setTimeout(() => {
+            progressWrapper.classList.add('hidden');
+            progressBar.style.width = '0%';
+            generatePdfBtn.disabled = false;
+          }, 1000);
+          return;
+        } catch (writeErr) {
+          console.error('Error escribiendo en fileHandle:', writeErr);
+          // Si falló escribir en el handle, recurrir a descarga normal
+        }
+      }
+
+      // Si no hubo fileHandle (por ejemplo en móvil, navegador secundario o modo descarga directa):
+      await savePdfFallback(doc, filename);
 
       setTimeout(() => {
         progressWrapper.classList.add('hidden');
@@ -2277,7 +2703,7 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       if (images && images.length > 0) {
         e.preventDefault();
         e.returnValue = ''; // Activa el diálogo nativo del navegador
-        return 'Tienes un legajo con ' + images.length + ' páginas cargadas. ¿Seguro que deseas salir sin guardar?';
+        return 'El expediente actual contiene ' + images.length + ' fojas procesadas. ¿Desea abandonar el sistema sin exportar el documento?';
       }
     });
 </script>
