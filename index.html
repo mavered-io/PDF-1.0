@@ -73,6 +73,17 @@
     .w-9 { width: 36px; height: 36px; }
     .h-9 { height: 36px; }
 
+        /* Responsive & Mobile Protection */
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .pb-safe {
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+      }
+    }
+
     /* Minimalist Foundation */
     body {
       background-color: #F8F9FA;
@@ -166,53 +177,65 @@
 </head>
 <body class="min-h-full flex flex-col font-sans selection:bg-zinc-900 selection:text-white">
 
-  <!-- Minimalist Header -->
+  <!-- Minimalist Header (Totalmente adaptado a Móviles, Tablets y Escritorio) -->
   <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-zinc-200 transition-all">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3">
       
-      <!-- Brand Minimalist -->
-      <div class="flex items-center gap-3">
-        <!-- Bespoke Minimalist Brand Icon -->
-        <div style="width: 36px; height: 36px; min-width: 36px; min-height: 36px;" class="w-9 h-9 rounded-xl bg-zinc-900 p-1 flex items-center justify-center shadow-sm border border-zinc-800">
-          <svg class="w-full h-full" viewBox="0 0 32 32" fill="none">
-            <path d="M8 6C8 5.17157 8.67157 4.5 9.5 4.5H18.5L24 10V26C24 26.8284 23.3284 27.5 22.5 27.5H9.5C8.67157 27.5 8 26.8284 8 26V6Z" fill="#FFFFFF"/>
-            <path d="M18.5 4.5V9C18.5 9.55228 18.9477 10 19.5 10H24L18.5 4.5Z" fill="#D4D4D8"/>
-            <rect x="10.5" y="7" width="5.5" height="2" rx="1" fill="#E11D48"/>
-            <path d="M11 23V13.5L16 18L21 13.5V23" stroke="#111315" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+      <!-- Brand & Top Mobile Action Row -->
+      <div class="flex items-center justify-between w-full sm:w-auto">
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <!-- Bespoke Minimalist Brand Icon -->
+          <div style="width: 34px; height: 34px; min-width: 34px; min-height: 34px;" class="w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-xl bg-zinc-900 p-1 flex items-center justify-center shadow-sm border border-zinc-800">
+            <svg class="w-full h-full" viewBox="0 0 32 32" fill="none">
+              <path d="M8 6C8 5.17157 8.67157 4.5 9.5 4.5H18.5L24 10V26C24 26.8284 23.3284 27.5 22.5 27.5H9.5C8.67157 27.5 8 26.8284 8 26V6Z" fill="#FFFFFF"/>
+              <path d="M18.5 4.5V9C18.5 9.55228 18.9477 10 19.5 10H24L18.5 4.5Z" fill="#D4D4D8"/>
+              <rect x="10.5" y="7" width="5.5" height="2" rx="1" fill="#E11D48"/>
+              <path d="M11 23V13.5L16 18L21 13.5V23" stroke="#111315" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-base tracking-tight text-zinc-900">PDF Studio</span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 text-zinc-600 border border-zinc-200/80">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Developed by <strong class="text-zinc-800 font-semibold">Yectlin</strong></span>
+            </span>
+          </div>
         </div>
 
-        <div class="flex items-center gap-2.5">
-          <span class="font-bold text-base tracking-tight text-zinc-900">PDF Studio</span>
-          <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 text-zinc-600 border border-zinc-200/80">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span>Developed by <strong class="text-zinc-800 font-semibold">Yectlin</strong></span>
-          </span>
-        </div>
+        <!-- Botón vaciar visible en móviles cuando hay fojas -->
+        <button id="clearAllBtnMobile" onclick="clearAll()" class="hidden text-[11px] font-semibold px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 border border-rose-200 transition cursor-pointer">
+          Vaciar fojas
+        </button>
       </div>
 
-      <!-- Right Header Actions: Selector Superior de Modo de Trabajo (Convertidor por defecto, Foliar o Portada UBAM) -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <div class="inline-flex p-1 bg-slate-100 rounded-xl gap-1 border border-slate-200/80 shadow-2xs">
-          <button type="button" onclick="setAppMode('converter')" id="modeBtn-converter" class="mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-900 bg-white shadow-2xs transition cursor-pointer flex items-center gap-1.5" title="Conversor directo a PDF sin foliado ni carátula">
-            <span>⚡ Convertidor PDF</span>
+      <!-- Right Header Actions: Selector Superior de Modo de Trabajo -->
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <div class="grid grid-cols-3 w-full sm:w-auto sm:inline-flex p-1 bg-slate-100 rounded-xl gap-1 border border-slate-200/80 shadow-2xs">
+          <button type="button" onclick="setAppMode('converter')" id="modeBtn-converter" class="mode-tab-btn px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold text-slate-900 bg-white shadow-2xs transition cursor-pointer flex items-center justify-center gap-1 min-h-[38px] sm:min-h-0" title="Conversor directo a PDF sin foliado ni carátula">
+            <span>⚡</span>
+            <span>Convertir</span>
+            <span class="hidden md:inline">PDF</span>
           </button>
           
-          <button type="button" onclick="setAppMode('folio')" id="modeBtn-folio" class="mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center gap-1.5" title="Activa la numeración y foliado oficial para expedientes">
-            <span>📑 Foliar</span>
+          <button type="button" onclick="setAppMode('folio')" id="modeBtn-folio" class="mode-tab-btn px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1 min-h-[38px] sm:min-h-0" title="Activa la numeración y foliado oficial para expedientes">
+            <span>📑</span>
+            <span>Foliar</span>
             <span id="badgeModeFolio" class="hidden text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700">Activo</span>
           </button>
 
-          <button type="button" onclick="setAppMode('cover')" id="modeBtn-cover" class="mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center gap-1.5" title="Activa la carátula institucional de la escuela UBAM">
-            <svg id="headerCoverLockIcon" class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <button type="button" onclick="setAppMode('cover')" id="modeBtn-cover" class="mode-tab-btn px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1 min-h-[38px] sm:min-h-0" title="Activa la carátula institucional de la escuela UBAM">
+            <svg id="headerCoverLockIcon" class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
-            <span>🎓 Portada UBAM</span>
+            <span>🎓</span>
+            <span>Portada</span>
+            <span class="hidden md:inline">UBAM</span>
             <span id="badgeModeCover" class="hidden text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700">Activa</span>
           </button>
         </div>
 
-        <button id="clearAllBtn" onclick="clearAll()" class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl text-rose-600 hover:bg-rose-50 border border-rose-200 transition cursor-pointer">
+        <button id="clearAllBtn" onclick="clearAll()" class="hidden sm:inline-flex text-xs font-semibold px-3 py-1.5 rounded-xl text-rose-600 hover:bg-rose-50 border border-rose-200 transition cursor-pointer whitespace-nowrap">
           Vaciar fojas
         </button>
       </div>
@@ -222,24 +245,21 @@
 
   <!-- Slim Context Status Bar -->
   <div class="bg-white border-b border-slate-200/80 shadow-2xs">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs">
-      <div class="flex items-center gap-2">
-        <span class="font-bold text-slate-800 flex items-center gap-1.5 text-[11px]">
+    <div class="max-w-6xl mx-auto px-3.5 sm:px-6 py-2 flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-3 text-xs">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <span class="font-bold text-slate-800 flex items-center gap-1.5 text-[11px] shrink-0">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>Modo:</span>
         </span>
-        <span id="activeModeDescription" class="text-slate-600 text-[11px] font-medium">
+        <span id="activeModeDescription" class="text-slate-600 text-[11px] font-medium leading-tight">
           Convertidor PDF estándar (conversión directa de fotos y documentos sin sellos ni carátula)
         </span>
       </div>
-      <div class="flex items-center gap-2 text-[11px] text-slate-400">
-        <span id="modeShortcutHint">Opciones arriba: Elige entre Portada UBAM o Foliar cuando lo requieras</span>
+      <div class="flex items-center gap-2 text-[10px] sm:text-[11px] text-slate-400 shrink-0 hidden md:flex">
+        <span id="modeShortcutHint">Elige entre Portada UBAM o Foliar arriba cuando lo requieras</span>
       </div>
     </div>
   </div>
-
-    </div>
-  </header>
 
   <!-- Main Container: Digitalización y Maquetación de Expedientes -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-8">
@@ -260,11 +280,12 @@
             </div>
             
             <div class="space-y-1">
-              <p class="text-sm font-semibold tracking-tight text-zinc-900">
-                Arrastre fojas, documentos PDF o escaneos TIFF aquí o <span class="text-zinc-900 underline underline-offset-4">haga clic para examinar</span>
+              <p class="text-xs sm:text-sm font-semibold tracking-tight text-zinc-900">
+                <span class="sm:hidden">Toque aquí para examinar archivos o fotos</span>
+                <span class="hidden sm:inline">Arrastre fojas, documentos PDF o escaneos TIFF aquí o <span class="text-zinc-900 underline underline-offset-4">haga clic para examinar</span></span>
               </p>
-              <p class="text-xs text-zinc-500">
-                Soporta imágenes JPG, PNG, documentos PDF y escaneos TIFF multipágina • Diseñado para la digitalización de legajos y expedientes de alto volumen (250+ fojas) • Pegado rápido con <kbd class="px-1.5 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-[11px] font-mono text-zinc-700 font-medium">Ctrl + V</kbd>
+              <p class="text-[11px] sm:text-xs text-zinc-500">
+                Soporta JPG, PNG, PDF y escaneos TIFF • Apto para legajos de alto volumen (250+ fojas) <span class="hidden sm:inline">• Pegado rápido con <kbd class="px-1.5 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-[11px] font-mono text-zinc-700 font-medium">Ctrl + V</kbd></span>
               </p>
             </div>
           </div>
@@ -350,7 +371,7 @@
         </div>
 
         <!-- Image Grid (Sortable) -->
-        <div id="imageGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3.5"></div>
+        <div id="imageGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 gap-3 sm:gap-3.5"></div>
 
       </div>
 
@@ -490,7 +511,7 @@
                 <span>Editar datos</span>
                 <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
               </button>
-              <button type="button" onclick="setAppMode('converter')" class="text-slate-400 hover:text-slate-600 text-xs p-1" title="Quitar carátula y volver a solo convertidor">✕</button>
+              <button type="button" onclick="lockCoverPage()" class="text-slate-400 hover:text-slate-600 text-xs p-1" title="Bloquear carátula y volver a convertidor">✕</button>
             </div>
           </div>
           <div class="flex items-center justify-between text-[10px] text-indigo-800/80 border-t border-indigo-100 pt-2 font-medium">
@@ -618,16 +639,16 @@
               </label>
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">PC / USB / Móvil</span>
             </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <label class="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200 cursor-pointer hover:border-slate-300 transition shadow-2xs">
-                <input type="radio" name="saveDestinationMode" value="ask" checked class="w-3.5 h-3.5 text-slate-900 focus:ring-slate-900 accent-slate-900 cursor-pointer" />
+                <input type="radio" name="saveDestinationMode" value="ask" checked class="w-3.5 h-3.5 text-slate-900 focus:ring-slate-900 accent-slate-900 cursor-pointer shrink-0" />
                 <div class="flex flex-col">
                   <span class="font-bold text-slate-900 text-xs">Elegir carpeta</span>
                   <span class="text-[10px] text-slate-500">Abre "Guardar como..."</span>
                 </div>
               </label>
               <label class="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200 cursor-pointer hover:border-slate-300 transition shadow-2xs">
-                <input type="radio" name="saveDestinationMode" value="direct" class="w-3.5 h-3.5 text-slate-900 focus:ring-slate-900 accent-slate-900 cursor-pointer" />
+                <input type="radio" name="saveDestinationMode" value="direct" class="w-3.5 h-3.5 text-slate-900 focus:ring-slate-900 accent-slate-900 cursor-pointer shrink-0" />
                 <div class="flex flex-col">
                   <span class="font-bold text-slate-900 text-xs">Descarga directa</span>
                   <span class="text-[10px] text-slate-500">A carpeta Descargas</span>
@@ -666,7 +687,7 @@
   </main>
 
   <!-- Floating Mobile Action Bar -->
-  <div id="mobileBar" class="lg:hidden fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-zinc-200 z-40 hidden items-center justify-between gap-3 shadow-lg">
+  <div id="mobileBar" class="lg:hidden fixed bottom-0 left-0 right-0 px-4 py-3 pb-safe bg-white/95 backdrop-blur-md border-t border-zinc-200 z-40 hidden items-center justify-between gap-3 shadow-xl">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 rounded-full bg-zinc-900"></span>
       <span id="mobileCount" class="text-xs font-medium text-zinc-800">0 fojas</span>
@@ -694,7 +715,7 @@
 
   <!-- Modal Dedicado a Carátula Institucional UBAM (Completamente separado de Foliado) -->
   <div id="coverModalBackdrop" style="display: none; z-index: 99990;" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm items-center justify-center p-4 transition-all duration-200">
-    <div id="coverModalCard" class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 transition-all duration-200 flex flex-col gap-4">
+    <div id="coverModalCard" class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full max-h-[92vh] overflow-y-auto p-4 sm:p-6 transition-all duration-200 flex flex-col gap-4">
       
       <!-- Modal Header -->
       <div class="flex items-start justify-between pb-3 border-b border-slate-100">
@@ -1062,10 +1083,10 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
 
     // Keyboard support: Escape closes/cancels, Enter confirms
     window.addEventListener('keydown', (e) => {
-      const pinBackdrop = document.getElementById('pinModalBackdrop');
-      if (pinBackdrop && !pinBackdrop.classList.contains('pointer-events-none')) {
+      const coverBackdrop = document.getElementById('coverModalBackdrop');
+      if (coverBackdrop && coverBackdrop.style.display !== 'none') {
         if (e.key === 'Escape') {
-          closePinModal();
+          closeCoverModal();
           return;
         }
       }
@@ -1205,10 +1226,17 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
         updateCoverHeaderStatus();
         showToast('Modo Foliado activado: Se estamparán las fojas del expediente', 'info');
       } else if (mode === 'cover') {
+        // SEGURIDAD CRÍTICA: Si la portada NO está desbloqueada con el PIN, NO permitir activar el modo.
+        if (!isCoverUnlocked) {
+          openCoverModal();
+          showToast('Ingresa la clave para acceder a la Portada UBAM', 'info');
+          return;
+        }
+
+        // Solo cuando ya está debidamente autenticada con 041107:
         if (btnCover) btnCover.className = activeBtn + ' border border-slate-300 text-slate-900 font-bold';
         if (descEl) descEl.textContent = 'Modo Carátula UBAM (portada oficial universitaria con heráldica y horario en la primera foja)';
         
-        // En modo portada se muestra la carátula y se oculta maquetación y foliado
         if (ubamSummaryCard) ubamSummaryCard.classList.remove('hidden');
         if (maquetacionCard) maquetacionCard.classList.add('hidden');
         if (foliadoCard) foliadoCard.classList.add('hidden');
@@ -1226,6 +1254,12 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     }
 
     function updateUbamSummary() {
+      const summaryCard = document.getElementById('ubamSummaryCard');
+      // SEGURIDAD: Nunca mostrar datos ni la tarjeta en el panel si la clave no fue ingresada
+      if (!isCoverUnlocked) {
+        if (summaryCard) summaryCard.classList.add('hidden');
+        return;
+      }
       const sub = document.getElementById('coverSubject')?.value || 'Materia no definida';
       const prof = document.getElementById('coverProf')?.value || '';
       const textEl = document.getElementById('ubamCardSummaryText');
@@ -1253,26 +1287,56 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       } else {
         if (unlockedPanel) unlockedPanel.classList.add('hidden');
         if (lockPanel) lockPanel.classList.remove('hidden');
-        setTimeout(() => {
-          const inp = document.getElementById('inlinePinInput');
-          if (inp) {
-            inp.value = '';
-            inp.focus();
-          }
-        }, 60);
+        const err = document.getElementById('inlinePinError');
+        if (err) err.classList.add('hidden');
+        const inp = document.getElementById('inlinePinInput');
+        if (inp) {
+          inp.value = '';
+          inp.classList.remove('border-rose-400', 'bg-rose-50/50');
+          setTimeout(() => inp.focus(), 80);
+        }
       }
     }
 
     function closeCoverModal() {
       const modal = document.getElementById('coverModalBackdrop');
       if (modal) modal.style.display = 'none';
+
+      // SEGURIDAD ESTRICTA: Si la persona cerró la ventana sin haber ingresado la clave correcta:
+      if (!isCoverUnlocked) {
+        const cb = document.getElementById('enableCoverPage');
+        if (cb) cb.checked = false;
+
+        const summaryCard = document.getElementById('ubamSummaryCard');
+        if (summaryCard) summaryCard.classList.add('hidden');
+
+        const badgeCover = document.getElementById('badgeModeCover');
+        if (badgeCover) badgeCover.classList.add('hidden');
+
+        // Si intentaba entrar a modo cover, restablecerlo a convertidor estándar
+        if (currentAppMode === 'cover') {
+          currentAppMode = 'converter';
+          const btnConverter = document.getElementById('modeBtn-converter');
+          const btnCover = document.getElementById('modeBtn-cover');
+          const activeBtn = 'mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-900 bg-white shadow-2xs transition cursor-pointer flex items-center gap-1.5';
+          const baseBtn = 'mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center gap-1.5';
+          if (btnConverter) btnConverter.className = activeBtn;
+          if (btnCover) btnCover.className = baseBtn;
+          const descEl = document.getElementById('activeModeDescription');
+          if (descEl) descEl.textContent = 'Convertidor PDF estándar (conversión directa de fotos y documentos sin sellos ni carátula)';
+          const maquetacionCard = document.getElementById('maquetacionCard');
+          if (maquetacionCard) maquetacionCard.classList.remove('hidden');
+        }
+      }
+
       updateCoverHeaderStatus();
       updateUbamSummary();
     }
 
     function updateCoverHeaderStatus() {
       const cb = document.getElementById('enableCoverPage');
-      const isEnabled = cb ? cb.checked : false;
+      // SEGURIDAD: Solo puede ser true si isCoverUnlocked es estrictamente true
+      const isEnabled = isCoverUnlocked && (cb ? cb.checked : false);
 
       const badgeCover = document.getElementById('badgeModeCover');
       const headerLock = document.getElementById('headerCoverLockIcon');
@@ -1307,31 +1371,80 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       if (val === '041107') {
         isCoverUnlocked = true;
         if (err) err.classList.add('hidden');
-        if (input) input.value = '';
+        if (input) {
+          input.value = '';
+          input.classList.remove('border-rose-400', 'bg-rose-50/50');
+        }
 
-        // Show unlocked panel, hide locked panel
+        // Mostrar panel desbloqueado y ocultar panel de clave
         document.getElementById('coverLockPanel')?.classList.add('hidden');
         document.getElementById('coverUnlockedPanel')?.classList.remove('hidden');
+
+        // Activar portada oficialmente
+        const cb = document.getElementById('enableCoverPage');
+        if (cb) cb.checked = true;
+
+        currentAppMode = 'cover';
+
+        // Actualizar UI del modo activo
+        const btnConverter = document.getElementById('modeBtn-converter');
+        const btnFolio = document.getElementById('modeBtn-folio');
+        const btnCover = document.getElementById('modeBtn-cover');
+        const descEl = document.getElementById('activeModeDescription');
+        const foliadoCard = document.getElementById('foliadoCard');
+        const ubamSummaryCard = document.getElementById('ubamSummaryCard');
+        const maquetacionCard = document.getElementById('maquetacionCard');
+        const badgeCover = document.getElementById('badgeModeCover');
+
+        const baseBtn = 'mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center gap-1.5';
+        const activeBtn = 'mode-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-900 bg-white shadow-2xs transition cursor-pointer flex items-center gap-1.5';
+
+        if (btnConverter) btnConverter.className = baseBtn;
+        if (btnFolio) btnFolio.className = baseBtn;
+        if (btnCover) btnCover.className = activeBtn + ' border border-slate-300 text-slate-900 font-bold';
+
+        if (descEl) descEl.textContent = 'Modo Carátula UBAM (portada oficial universitaria con heráldica y horario en la primera foja)';
+        if (foliadoCard) foliadoCard.classList.add('hidden');
+        if (maquetacionCard) maquetacionCard.classList.add('hidden');
+        if (ubamSummaryCard) ubamSummaryCard.classList.remove('hidden');
+        if (badgeCover) badgeCover.classList.remove('hidden');
 
         updateCoverHeaderStatus();
         updateUbamSummary();
         showToast('Acceso autorizado a Portada Institucional UBAM', 'success');
       } else {
-        if (err) err.classList.remove('hidden');
+        isCoverUnlocked = false;
+        if (err) {
+          err.textContent = 'Clave incorrecta. Acceso restringido.';
+          err.classList.remove('hidden');
+        }
         if (input) {
           input.classList.add('border-rose-400', 'bg-rose-50/50');
           input.select();
         }
+        showToast('Clave incorrecta. Acceso restringido', 'warning');
       }
     }
 
     function lockCoverPage() {
       isCoverUnlocked = false;
+
+      const cb = document.getElementById('enableCoverPage');
+      if (cb) cb.checked = false;
+
       document.getElementById('coverUnlockedPanel')?.classList.add('hidden');
       document.getElementById('coverLockPanel')?.classList.remove('hidden');
 
+      const input = document.getElementById('inlinePinInput');
+      if (input) input.value = '';
+
+      const summaryCard = document.getElementById('ubamSummaryCard');
+      if (summaryCard) summaryCard.classList.add('hidden');
+
+      setAppMode('converter');
       updateCoverHeaderStatus();
-      showToast('Portada protegida con clave', 'info');
+      updateUbamSummary();
+      showToast('Portada bloqueada con clave', 'info');
     }
 
     function switchTab(tabId) {
@@ -1371,6 +1484,14 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
 
     // Toggle Cover Page
     function toggleCoverPage() {
+      // SEGURIDAD: Nunca permitir encender el checkbox si no se ha ingresado la clave
+      if (!isCoverUnlocked) {
+        const cb = document.getElementById('enableCoverPage');
+        if (cb) cb.checked = false;
+        openCoverModal();
+        return;
+      }
+
       const cb = document.getElementById('enableCoverPage');
       const isEnabled = cb ? cb.checked : false;
       const fields = document.getElementById('coverFields');
@@ -1807,11 +1928,13 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       imageCounterBadge.textContent = count;
       document.getElementById('mobileCount').textContent = `${count} página${count !== 1 ? 's' : ''}`;
 
+      const clearMobile = document.getElementById('clearAllBtnMobile');
       if (count > 0) {
         emptyState.classList.add('hidden');
         imageListHeader.classList.remove('hidden');
         imageListHeader.classList.add('flex');
         clearAllBtn.classList.remove('hidden');
+        if (clearMobile) clearMobile.classList.remove('hidden');
         document.getElementById('mobileBar').classList.remove('hidden');
         document.getElementById('mobileBar').classList.add('flex');
       } else {
@@ -1819,6 +1942,7 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
         imageListHeader.classList.add('hidden');
         imageListHeader.classList.remove('flex');
         clearAllBtn.classList.add('hidden');
+        if (clearMobile) clearMobile.classList.add('hidden');
         document.getElementById('mobileBar').classList.add('hidden');
         document.getElementById('mobileBar').classList.remove('flex');
       }
@@ -1864,9 +1988,12 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
               </button>
             </div>
           </div>
-          <div class="p-2 flex items-center justify-between text-[11px] text-zinc-500 bg-white">
-            <span class="truncate max-w-[100px] font-medium" title="${item.name}">${item.name}</span>
-            <span class="font-mono text-[10px]">${item.rotation ? item.rotation + '°' : ''}</span>
+          <div class="p-2 flex items-center justify-between text-[11px] text-zinc-500 bg-white border-t border-zinc-100">
+            <span class="truncate max-w-[70px] sm:max-w-[100px] font-medium" title="${item.name}">${item.name}</span>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="event.stopPropagation(); rotateImage('${item.id}', 90)" class="w-6 h-6 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center text-xs transition cursor-pointer" title="Girar 90°">↻</button>
+              <button type="button" onclick="event.stopPropagation(); deleteImage('${item.id}')" class="w-6 h-6 rounded bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center text-xs transition cursor-pointer" title="Eliminar hoja">✕</button>
+            </div>
           </div>
         `;
         imageGrid.appendChild(card);
@@ -2410,7 +2537,8 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
 
       const { jsPDF } = window.jspdf;
       const pageSize = pageSizeSelect.value;
-      const hasCover = enableCoverPage.checked;
+      // SEGURIDAD CRÍTICA: La carátula NUNCA se generará si no ha sido desbloqueada con la clave
+      const hasCover = isCoverUnlocked && (enableCoverPage ? enableCoverPage.checked : false);
       const qualityVal = parseInt(document.getElementById('qualityRange').value, 10);
       const qualityRatio = qualityVal / 100;
       const addPageNums = document.getElementById('addPageNumbers').checked;
