@@ -13,19 +13,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   
-  <!-- CDNs: Tailwind, jsPDF, SortableJS, PDF.js -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="utif.min.js"></script>
+  <!-- TailWind Config BEFORE Tailwind CDN -->
   <script>
-    if (typeof UTIF === 'undefined') {
-      document.write('<script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.min.js"><\/script>');
-    }
-  </script>
-
-  <script>
+    window.tailwind = window.tailwind || {};
     tailwind.config = {
       theme: {
         extend: {
@@ -58,7 +48,31 @@
     }
   </script>
 
+  <!-- CDNs: Tailwind, jsPDF, SortableJS, PDF.js, UTIF -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="utif.min.js"></script>
+
   <style>
+    /* SVG safety & robust sizing */
+    svg {
+      display: inline-block;
+      vertical-align: middle;
+      max-width: 100%;
+    }
+    .w-6 { width: 24px; height: 24px; }
+    .h-6 { height: 24px; }
+    .w-4 { width: 16px; height: 16px; }
+    .h-4 { height: 16px; }
+    .w-3\.5 { width: 14px; height: 14px; }
+    .h-3\.5 { height: 14px; }
+    .w-12 { width: 48px; height: 48px; }
+    .h-12 { height: 48px; }
+    .w-9 { width: 36px; height: 36px; }
+    .h-9 { height: 36px; }
+
     /* Minimalist Foundation */
     body {
       background-color: #F8F9FA;
@@ -159,7 +173,7 @@
       <!-- Brand Minimalist -->
       <div class="flex items-center gap-3">
         <!-- Bespoke Minimalist Brand Icon -->
-        <div class="w-9 h-9 rounded-xl bg-zinc-900 p-1 flex items-center justify-center shadow-sm border border-zinc-800">
+        <div style="width: 36px; height: 36px; min-width: 36px; min-height: 36px;" class="w-9 h-9 rounded-xl bg-zinc-900 p-1 flex items-center justify-center shadow-sm border border-zinc-800">
           <svg class="w-full h-full" viewBox="0 0 32 32" fill="none">
             <path d="M8 6C8 5.17157 8.67157 4.5 9.5 4.5H18.5L24 10V26C24 26.8284 23.3284 27.5 22.5 27.5H9.5C8.67157 27.5 8 26.8284 8 26V6Z" fill="#FFFFFF"/>
             <path d="M18.5 4.5V9C18.5 9.55228 18.9477 10 19.5 10H24L18.5 4.5Z" fill="#D4D4D8"/>
@@ -284,6 +298,9 @@
               Formato
             </button>
             <button type="button" onclick="switchTab('cover')" id="tabBtn-cover" class="options-tab-btn flex-1 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 transition text-center cursor-pointer flex items-center justify-center gap-1.5">
+              <svg id="coverLockIcon" class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
               <span>Portada</span>
               <span id="coverBadgeDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 hidden"></span>
             </button>
@@ -359,76 +376,159 @@
 
           </div>
 
-          <!-- Tab 2: Official UBAM Cover Page Options -->
+                    <!-- Tab 2: Official UBAM Cover Page Options -->
           <div id="tabContent-cover" class="hidden flex flex-col gap-4">
             
-            <!-- Switch Enable Cover -->
-            <div class="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
-              <div>
-                <p class="text-xs font-semibold text-zinc-900">Incluir mi Portada Oficial UBAM</p>
-                <p class="text-[11px] text-zinc-500">Plantilla oficial con escudo UBAM y sello LIAF</p>
+            <!-- PANEL BLOQUEADO (Visible cuando !isCoverUnlocked) -->
+            <div id="coverLockPanel" class="flex flex-col items-center justify-center p-6 text-center bg-zinc-50 rounded-2xl border border-zinc-200 gap-3">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-600 ring-8 ring-amber-50/50">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
               </div>
 
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="enableCoverPage" class="sr-only peer" onchange="toggleCoverPage()">
-                <div class="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
-              </label>
+              <div>
+                <h3 class="text-sm font-bold text-zinc-900 tracking-tight">Portada Institucional UBAM</h3>
+                <p class="text-xs text-zinc-500 mt-1 max-w-xs leading-relaxed">
+                  Esta sección está protegida. Ingresa la clave de autorización para ver y editar la carátula:
+                </p>
+              </div>
+
+              <form onsubmit="handleInlinePinSubmit(event)" class="w-full mt-2 flex flex-col gap-2.5 max-w-xs">
+                <div>
+                  <input type="password" id="inlinePinInput" maxlength="12" placeholder="Ingresa la clave..." autocomplete="off" class="w-full text-center tracking-widest font-mono text-sm py-2 px-3 rounded-xl border border-zinc-300 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition bg-white" />
+                  <p id="inlinePinError" class="text-[11px] text-rose-600 font-medium mt-1.5 hidden">Clave incorrecta. Acceso denegado.</p>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                  <span>Desbloquear Portada</span>
+                </button>
+              </form>
             </div>
 
-            <!-- Cover Input Fields -->
-            <div id="coverFields" class="flex flex-col gap-3">
+            <!-- PANEL DESBLOQUEADO (Visible cuando isCoverUnlocked) -->
+            <div id="coverUnlockedPanel" class="hidden flex flex-col gap-4">
               
-              <!-- Institutional Badge -->
-              <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-600 flex flex-col gap-1">
-                <span class="font-bold text-zinc-900">Universidad Bancaria de México</span>
-                <span class="text-[11px]">Licenciatura en Informática Administrativa y Fiscal</span>
-                <div class="flex items-center justify-between mt-1 pt-1 border-t border-zinc-200 text-[10px] text-zinc-500">
-                  <span>Alumno: <strong class="text-zinc-800">Durán Hernández Julio César</strong></span>
-                  <span>Teoloyucan, Méx.</span>
+              <!-- Lock Status Bar -->
+              <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs">
+                <span class="inline-flex items-center gap-1.5 text-emerald-800 font-medium">
+                  <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                  <span>Acceso autorizado</span>
+                </span>
+                <button type="button" onclick="lockCoverPage()" class="text-[11px] text-zinc-600 hover:text-zinc-900 font-medium underline cursor-pointer">
+                  Bloquear acceso
+                </button>
+              </div>
+
+              <!-- Switch Enable Cover -->
+              <div class="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-semibold text-zinc-900">Incluir mi Portada Oficial UBAM</p>
+                  <p class="text-[11px] text-zinc-500">Plantilla oficial con escudo UBAM y sello LIAF</p>
                 </div>
+
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="enableCoverPage" class="sr-only peer" onchange="toggleCoverPage()">
+                  <div class="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
+                </label>
               </div>
 
-              <!-- Only the fields that change per assignment -->
-              <div class="space-y-1">
-                <label class="text-[11px] font-medium text-zinc-600">Materia / Asignatura</label>
-                <input type="text" id="coverSubject" value="AUDITORÍA INFORMÁTICA" placeholder="Ej. AUDITORÍA INFORMÁTICA" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
-              </div>
-
-              <div class="space-y-1">
-                <label class="text-[11px] font-medium text-zinc-600">Título del Trabajo / Tarea</label>
-                <input type="text" id="coverTitle" value="Cuestionario teórico." placeholder="Ej. Cuestionario teórico / Práctica 1" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-semibold" />
-              </div>
-
-              <div class="space-y-1">
-                <label class="text-[11px] font-medium text-zinc-600">Docente / Catedrático</label>
-                <input type="text" id="coverProf" value="GARCÍA MARTÍNEZ DANIEL" placeholder="Ej. Daniel García Martínez" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
-              </div>
-
-              <div class="space-y-1">
-                <label class="text-[11px] font-medium text-zinc-600">Fecha de Entrega</label>
-                <input type="text" id="coverDate" placeholder="Ej. NOVIEMBRE, 2026." class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
-              </div>
-
-              <!-- Collapsible for custom student name or location -->
-              <details class="text-[11px] text-zinc-500 border-t border-zinc-200 pt-2">
-                <summary class="cursor-pointer font-medium text-zinc-700 hover:text-zinc-900 select-none">
-                  Editar alumno o lugar (Opcional si tu novia o compañeros la usan)
-                </summary>
-                <div class="mt-2 flex flex-col gap-2">
-                  <div class="space-y-0.5">
-                    <label class="text-[10px] text-zinc-500">Nombre del alumno</label>
-                    <input type="text" id="coverStudentName" value="Durán Hernández Julio César." class="w-full mini-input rounded-xl px-2.5 py-1.5 text-xs font-medium">
-                  </div>
-                  <div class="space-y-0.5">
-                    <label class="text-[10px] text-zinc-500">Lugar al pie</label>
-                    <input type="text" id="coverLocation" value="TEOLOYUCAN, ESTADO DE MÉXICO" class="w-full mini-input rounded-xl px-2.5 py-1.5 text-xs">
+              <!-- Cover Input Fields -->
+              <div id="coverFields" class="flex flex-col gap-3">
+                
+                <!-- Institutional Badge -->
+                <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-600 flex flex-col gap-1">
+                  <span class="font-bold text-zinc-900">Universidad Bancaria de México</span>
+                  <span class="text-[11px]">Licenciatura en Informática Administrativa y Fiscal</span>
+                  <div class="flex items-center justify-between mt-1 pt-1 border-t border-zinc-200 text-[10px] text-zinc-500">
+                    <span>Alumno: <strong class="text-zinc-800">Durán Hernández Julio César</strong></span>
+                    <span>Teoloyucan, Méx.</span>
                   </div>
                 </div>
-              </details>
 
-              <p class="text-[11px] text-zinc-400 pt-1 leading-relaxed">
-                ✓ Tu carátula oficial se genera en la página 1 con los sellos oficiales de alta resolución, barras laterales y tipografía institucional.
-              </p>
+                <!-- Quick Subject & Teacher Preset Selector from Horario -->
+                <div class="space-y-1.5 p-3 rounded-xl bg-zinc-50 border border-zinc-200">
+                  <label class="text-xs font-semibold text-zinc-800 flex items-center justify-between">
+                    <span>Materia y Maestro (Horario de clases)</span>
+                    <span class="text-[10px] text-zinc-400 font-normal">Auto-completar</span>
+                  </label>
+                  <select id="coursePresetSelect" onchange="applyCoursePreset()" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer bg-white">
+                    <option value="" disabled selected>Selecciona tu materia del horario...</option>
+                    <option value="bd2">Base de datos II • Sthefany Villarreal Jiménez</option>
+                    <option value="so1">Sistemas operativos I • Brenda Maritza González Cortés</option>
+                    <option value="arq">Arquitectura de computadoras • José de Jesús Olivera Tenorio</option>
+                    <option value="fin2">Finanzas II • Diana María Cabrera Astorga</option>
+                    <option value="sol">Solución de problemas y toma de decisiones • Sergio Peña Cabrera</option>
+                    <option value="ing7">Inglés VII • Mariana Solís Rodríguez</option>
+                    <option value="imp1">Impuestos I • Erika Beatriz Chimal Reyes</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[11px] font-medium text-zinc-600">Materia / Asignatura</label>
+                  <input type="text" id="coverSubject" list="scheduleSubjects" value="Base de datos II" placeholder="Ej. Base de datos II" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
+                  <datalist id="scheduleSubjects">
+                    <option value="Base de datos II">
+                    <option value="Sistemas operativos I">
+                    <option value="Arquitectura de computadoras">
+                    <option value="Finanzas II">
+                    <option value="Solución de problemas y toma de decisiones">
+                    <option value="Inglés VII">
+                    <option value="Impuestos I">
+                  </datalist>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[11px] font-medium text-zinc-600">Docente / Catedrático</label>
+                  <input type="text" id="coverProf" list="scheduleTeachers" value="Sthefany Villarreal Jiménez" placeholder="Ej. Sthefany Villarreal Jiménez" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
+                  <datalist id="scheduleTeachers">
+                    <option value="Sthefany Villarreal Jiménez">
+                    <option value="Brenda Maritza González Cortés">
+                    <option value="José de Jesús Olivera Tenorio">
+                    <option value="Diana María Cabrera Astorga">
+                    <option value="Sergio Peña Cabrera">
+                    <option value="Mariana Solís Rodríguez">
+                    <option value="Erika Beatriz Chimal Reyes">
+                  </datalist>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[11px] font-medium text-zinc-600">Título del Trabajo / Tarea</label>
+                  <input type="text" id="coverTitle" value="Cuestionario teórico." placeholder="Ej. Cuestionario teórico / Práctica 1" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-semibold" />
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[11px] font-medium text-zinc-600">Fecha de Entrega</label>
+                  <input type="text" id="coverDate" placeholder="Ej. NOVIEMBRE, 2026." class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium" />
+                </div>
+
+                <!-- Collapsible for custom student name or location -->
+                <details class="text-[11px] text-zinc-500 border-t border-zinc-200 pt-2">
+                  <summary class="cursor-pointer font-medium text-zinc-700 hover:text-zinc-900 select-none">
+                    Editar alumno o lugar (Opcional si tu novia o compañeros la usan)
+                  </summary>
+                  <div class="mt-2 flex flex-col gap-2">
+                    <div class="space-y-0.5">
+                      <label class="text-[10px] text-zinc-500">Nombre del alumno</label>
+                      <input type="text" id="coverStudentName" value="Durán Hernández Julio César." class="w-full mini-input rounded-xl px-2.5 py-1.5 text-xs font-medium">
+                    </div>
+                    <div class="space-y-0.5">
+                      <label class="text-[10px] text-zinc-500">Lugar al pie</label>
+                      <input type="text" id="coverLocation" value="TEOLOYUCAN, ESTADO DE MÉXICO" class="w-full mini-input rounded-xl px-2.5 py-1.5 text-xs">
+                    </div>
+                  </div>
+                </details>
+
+                <p class="text-[11px] text-zinc-400 pt-1 leading-relaxed">
+                  ✓ Tu carátula oficial se genera en la página 1 con los sellos oficiales de alta resolución, barras laterales y tipografía institucional.
+                </p>
+              </div>
+
             </div>
 
           </div>
@@ -436,6 +536,13 @@
           <!-- Tab 3: Foliado & Numeración de Expedientes -->
           <div id="tabContent-academic" class="hidden flex flex-col gap-4">
             
+            <!-- Hidden inputs to preserve JS API and defaults -->
+            <input type="hidden" id="folioDesign" value="minimal" />
+            <input type="hidden" id="folioColor" value="black" />
+            <input type="hidden" id="folioStyle" value="number" />
+            <input type="hidden" id="folioWhitePatch" value="" />
+            <input type="hidden" id="headerText" value="" />
+
             <!-- Switch Foliado -->
             <div class="flex items-center justify-between p-3 rounded-xl bg-zinc-50 border border-zinc-200">
               <div>
@@ -460,58 +567,31 @@
               </p>
             </div>
 
-            <!-- Diseño Visual y Color de Tinta -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold text-zinc-800">Diseño del folio</label>
-                <select id="folioDesign" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer bg-white" onchange="updateFolioPreview()">
-                  <option value="minimal" selected>Minimalista (Fondo transparente)</option>
-                  <option value="stamp">Sello de Archivo (Marco técnico)</option>
-                  <option value="pill">Cápsula fina (Contorno redondeado)</option>
-                  <option value="bates">Foliadora Mecánica (No. 000223)</option>
-                </select>
+            <!-- Diseño Minimalista Fijo & Muestra -->
+            <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-mono font-bold text-xs">
+                  #
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-zinc-900">Diseño Minimalista</p>
+                  <p class="text-[11px] text-zinc-500">Tinta negra oficial • Fondo 100% transparente</p>
+                </div>
               </div>
-
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold text-zinc-800">Tinta del sello</label>
-                <select id="folioColor" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer bg-white" onchange="updateFolioPreview()">
-                  <option value="blue" selected>Azul Notarial / Judicial</option>
-                  <option value="black">Negro Grafito Oficial</option>
-                  <option value="red">Rojo Sello de Archivo</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Previsualizador Visual en Vivo del Sello -->
-            <div class="p-3 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-between">
-              <span class="text-xs font-medium text-zinc-600">Muestra del diseño:</span>
-              <div id="folioDesignPreviewBadge" class="transition-all flex items-center justify-center">
+              <div id="folioDesignPreviewBadge" class="py-1 px-3 rounded-lg font-mono font-bold text-sm tracking-tight text-zinc-900 bg-white border border-zinc-200 shadow-xs">
                 223
               </div>
             </div>
 
-            <!-- Posición & Formato -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div class="space-y-1.5">
-                <label class="text-xs font-medium text-zinc-700">Posición del folio</label>
-                <select id="pageNumberPos" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer">
-                  <option value="top-right" selected>Superior Derecha (Archivo)</option>
-                  <option value="bottom-right">Inferior Derecha</option>
-                  <option value="bottom-center">Inferior Centro</option>
-                  <option value="top-center">Superior Centro</option>
-                </select>
-              </div>
-
-              <div class="space-y-1.5">
-                <label class="text-xs font-medium text-zinc-700">Formato del número</label>
-                <select id="folioStyle" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer" onchange="updateFolioPreview()">
-                  <option value="number" selected>Solo Número (ej. 223)</option>
-                  <option value="padded">Ceros delante (ej. 001, 002)</option>
-                  <option value="folio">Folio: 223</option>
-                  <option value="foja">Foja 223</option>
-                  <option value="page_total">1 / 260</option>
-                </select>
-              </div>
+            <!-- Posición del Folio -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-medium text-zinc-700">Posición del folio</label>
+              <select id="pageNumberPos" class="w-full mini-input rounded-xl px-3 py-2 text-xs font-medium cursor-pointer">
+                <option value="top-right" selected>Superior Derecha (Norma de Archivo)</option>
+                <option value="bottom-right">Inferior Derecha</option>
+                <option value="bottom-center">Inferior Centro</option>
+                <option value="top-center">Superior Centro</option>
+              </select>
             </div>
 
             <!-- Configuración del rango de números (Continuaciones de Legajos) -->
@@ -540,16 +620,8 @@
               </div>
             </div>
 
-            <!-- Opciones de fondo y carátula -->
-            <div class="flex flex-col gap-2">
-              <label class="flex items-center gap-2.5 p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 cursor-pointer" onchange="updateFolioPreview()">
-                <input type="checkbox" id="folioWhitePatch" class="w-3.5 h-3.5 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-900 cursor-pointer" />
-                <div class="flex flex-col">
-                  <span class="text-xs font-medium text-zinc-800">Fondo blanco protector (Opcional)</span>
-                  <span class="text-[10px] text-zinc-400">Por defecto es transparente. Actívalo solo si requieres parchar un rayón previo</span>
-                </div>
-              </label>
-
+            <!-- Opción: No foliar carátula -->
+            <div>
               <label class="flex items-center gap-2.5 p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 cursor-pointer" onchange="updateFolioPreview()">
                 <input type="checkbox" id="folioSkipFirst" checked class="w-3.5 h-3.5 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-900 cursor-pointer" />
                 <div class="flex flex-col">
@@ -557,13 +629,6 @@
                   <span class="text-[10px] text-zinc-400">Respeta la carátula de expediente sin imprimirle folio encima</span>
                 </div>
               </label>
-            </div>
-
-            <!-- Encabezado adicional opcional -->
-            <div class="space-y-1.5">
-              <label class="text-xs font-medium text-zinc-700">Texto de encabezado institucional (Opcional)</label>
-              <input type="text" id="headerText" placeholder="Ej. EXPEDIENTE 9.4 • PATRIMONIO MUNICIPAL" class="w-full mini-input rounded-xl px-3 py-2 text-xs" />
-              <p class="text-[11px] text-zinc-400">Texto institucional centrado arriba de cada hoja si te lo piden.</p>
             </div>
 
           </div>
@@ -631,9 +696,10 @@
   </footer>
 
   
+  <!-- Modern Modal & Toas
   <!-- Modern Modal & Toast System (MVRD UI) -->
-  <div id="customModalBackdrop" class="fixed inset-0 z-50 bg-zinc-950/40 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
-    <div id="customModalCard" class="bg-white rounded-2xl shadow-2xl border border-zinc-100 max-w-sm w-full p-6 text-center transform scale-95 transition-all duration-200 flex flex-col items-center">
+  <div id="customModalBackdrop" style="display: none; z-index: 99999;" class="fixed inset-0 bg-zinc-950/50 backdrop-blur-sm items-center justify-center p-4 transition-all duration-200">
+    <div id="customModalCard" style="transform: scale(0.95);" class="bg-white rounded-2xl shadow-2xl border border-zinc-100 max-w-sm w-full p-6 text-center transition-all duration-200 flex flex-col items-center">
       
       <!-- Icon Container -->
       <div id="customModalIcon" class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-colors"></div>
@@ -745,9 +811,14 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
           }
         }
 
-        els.backdrop.classList.remove('opacity-0', 'pointer-events-none');
-        els.card.classList.remove('scale-95');
-        els.card.classList.add('scale-100');
+        els.backdrop.style.display = 'flex';
+        els.backdrop.style.zIndex = '99999';
+        els.backdrop.style.opacity = '1';
+        els.backdrop.style.pointerEvents = 'auto';
+        if (els.card) {
+          els.card.style.transform = 'scale(1)';
+          els.card.style.opacity = '1';
+        }
 
         els.confirmBtn.onclick = () => closeCustomModal(true);
       });
@@ -783,9 +854,14 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
           }
         }
 
-        els.backdrop.classList.remove('opacity-0', 'pointer-events-none');
-        els.card.classList.remove('scale-95');
-        els.card.classList.add('scale-100');
+        els.backdrop.style.display = 'flex';
+        els.backdrop.style.zIndex = '99999';
+        els.backdrop.style.opacity = '1';
+        els.backdrop.style.pointerEvents = 'auto';
+        if (els.card) {
+          els.card.style.transform = 'scale(1)';
+          els.card.style.opacity = '1';
+        }
 
         els.confirmBtn.onclick = () => closeCustomModal(true);
         if (els.cancelBtn) {
@@ -797,11 +873,11 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     function closeCustomModal(result) {
       const els = getModalElements();
       if (els.backdrop) {
-        els.backdrop.classList.add('opacity-0', 'pointer-events-none');
+        els.backdrop.style.display = 'none';
+        els.backdrop.style.pointerEvents = 'none';
       }
       if (els.card) {
-        els.card.classList.remove('scale-100');
-        els.card.classList.add('scale-95');
+        els.card.style.transform = 'scale(0.95)';
       }
       if (modalResolve) {
         modalResolve(result);
@@ -811,6 +887,14 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
 
     // Keyboard support: Escape closes/cancels, Enter confirms
     window.addEventListener('keydown', (e) => {
+      const pinBackdrop = document.getElementById('pinModalBackdrop');
+      if (pinBackdrop && !pinBackdrop.classList.contains('pointer-events-none')) {
+        if (e.key === 'Escape') {
+          closePinModal();
+          return;
+        }
+      }
+
       const backdrop = document.getElementById('customModalBackdrop');
       if (backdrop && !backdrop.classList.contains('pointer-events-none')) {
         if (e.key === 'Escape') {
@@ -886,16 +970,118 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
     });
 
     // Tab switcher inside Options panel
+            // ==========================================
+    // PORTADA UBAM PIN PROTECTION (041107)
+    // ==========================================
+    let isCoverUnlocked = false;
+
+    function handleInlinePinSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('inlinePinInput');
+      const err = document.getElementById('inlinePinError');
+      const val = input ? input.value.trim() : '';
+
+      if (val === '041107') {
+        isCoverUnlocked = true;
+        if (err) err.classList.add('hidden');
+        if (input) input.value = '';
+
+        // Update lock icon on tab button to unlocked green
+        const lockIcon = document.getElementById('coverLockIcon');
+        if (lockIcon) {
+          lockIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />`;
+          lockIcon.classList.remove('text-zinc-400');
+          lockIcon.classList.add('text-emerald-500');
+        }
+
+        // Show unlocked panel, hide locked panel
+        document.getElementById('coverLockPanel')?.classList.add('hidden');
+        document.getElementById('coverUnlockedPanel')?.classList.remove('hidden');
+
+        showToast('Acceso autorizado a Portada Institucional', 'success');
+      } else {
+        if (err) err.classList.remove('hidden');
+        if (input) {
+          input.classList.add('border-rose-400', 'bg-rose-50/50');
+          input.select();
+        }
+      }
+    }
+
+    function lockCoverPage() {
+      isCoverUnlocked = false;
+      const lockIcon = document.getElementById('coverLockIcon');
+      if (lockIcon) {
+        lockIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />`;
+        lockIcon.classList.remove('text-emerald-500');
+        lockIcon.classList.add('text-zinc-400');
+      }
+
+      document.getElementById('coverUnlockedPanel')?.classList.add('hidden');
+      document.getElementById('coverLockPanel')?.classList.remove('hidden');
+
+      showToast('Portada bloqueada con clave', 'info');
+    }
+
     function switchTab(tabId) {
       ['format', 'cover', 'academic'].forEach(id => {
-        document.getElementById(`tabContent-${id}`).classList.add('hidden');
-        document.getElementById(`tabBtn-${id}`).classList.remove('active', 'text-zinc-900', 'bg-white', 'shadow-sm', 'font-semibold');
-        document.getElementById(`tabBtn-${id}`).classList.add('text-zinc-600', 'font-medium');
+        const contentEl = document.getElementById(`tabContent-${id}`);
+        const btnEl = document.getElementById(`tabBtn-${id}`);
+        if (contentEl) contentEl.classList.add('hidden');
+        if (btnEl) {
+          btnEl.classList.remove('active', 'text-zinc-900', 'bg-white', 'shadow-sm', 'font-semibold');
+          btnEl.classList.add('text-zinc-600', 'font-medium');
+        }
       });
-      document.getElementById(`tabContent-${tabId}`).classList.remove('hidden');
+
+      const targetContent = document.getElementById(`tabContent-${tabId}`);
       const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-      activeBtn.classList.add('active', 'text-zinc-900', 'bg-white', 'shadow-sm', 'font-semibold');
-      activeBtn.classList.remove('text-zinc-600', 'font-medium');
+      if (targetContent) targetContent.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('active', 'text-zinc-900', 'bg-white', 'shadow-sm', 'font-semibold');
+        activeBtn.classList.remove('text-zinc-600', 'font-medium');
+      }
+
+      // If switching to cover, handle lock/unlock panel state
+      if (tabId === 'cover') {
+        const lockPanel = document.getElementById('coverLockPanel');
+        const unlockedPanel = document.getElementById('coverUnlockedPanel');
+        if (isCoverUnlocked) {
+          if (lockPanel) lockPanel.classList.add('hidden');
+          if (unlockedPanel) unlockedPanel.classList.remove('hidden');
+        } else {
+          if (unlockedPanel) unlockedPanel.classList.add('hidden');
+          if (lockPanel) lockPanel.classList.remove('hidden');
+          setTimeout(() => {
+            const inp = document.getElementById('inlinePinInput');
+            if (inp) inp.focus();
+          }, 50);
+        }
+      }
+    }
+
+        // Horario Preset Data & Auto-fill
+    const SCHEDULE_COURSES = {
+      'bd2': { subject: 'Base de datos II', prof: 'Sthefany Villarreal Jiménez' },
+      'so1': { subject: 'Sistemas operativos I', prof: 'Brenda Maritza González Cortés' },
+      'arq': { subject: 'Arquitectura de computadoras', prof: 'José de Jesús Olivera Tenorio' },
+      'fin2': { subject: 'Finanzas II', prof: 'Diana María Cabrera Astorga' },
+      'sol': { subject: 'Solución de problemas y toma de decisiones', prof: 'Sergio Peña Cabrera' },
+      'ing7': { subject: 'Inglés VII', prof: 'Mariana Solís Rodríguez' },
+      'imp1': { subject: 'Impuestos I', prof: 'Erika Beatriz Chimal Reyes' }
+    };
+
+    function applyCoursePreset() {
+      const select = document.getElementById('coursePresetSelect');
+      const val = select ? select.value : '';
+      const course = SCHEDULE_COURSES[val];
+      if (course) {
+        const subInput = document.getElementById('coverSubject');
+        const profInput = document.getElementById('coverProf');
+        if (subInput) subInput.value = course.subject;
+        if (profInput) profInput.value = course.prof;
+        showToast(`${course.subject} • ${course.prof}`, 'info');
+      }
     }
 
     // Toggle Cover Page
@@ -992,22 +1178,33 @@ const LOGO_LIAF = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAAD
       }
     });
 
-    // SortableJS setup
-    const sortable = new Sortable(imageGrid, {
-      animation: 150,
-      ghostClass: 'ghost-card',
-      onEnd: () => {
-        const newImages = [];
-        const cards = imageGrid.querySelectorAll('[data-id]');
-        cards.forEach(card => {
-          const id = card.getAttribute('data-id');
-          const item = images.find(img => img.id === id);
-          if (item) newImages.push(item);
-        });
-        images = newImages;
-        updateBadges();
+    // SortableJS setup (safe init)
+    let sortable = null;
+    function initSortable() {
+      if (typeof Sortable !== 'undefined' && imageGrid && !sortable) {
+        try {
+          sortable = new Sortable(imageGrid, {
+            animation: 150,
+            ghostClass: 'ghost-card',
+            onEnd: () => {
+              const newImages = [];
+              const cards = imageGrid.querySelectorAll('[data-id]');
+              cards.forEach(card => {
+                const id = card.getAttribute('data-id');
+                const item = images.find(img => img.id === id);
+                if (item) newImages.push(item);
+              });
+              images = newImages;
+              updateBadges();
+            }
+          });
+        } catch(e) {
+          console.warn('Sortable init notice:', e);
+        }
       }
-    });
+    }
+    initSortable();
+    window.addEventListener('DOMContentLoaded', initSortable);
 
     // Helper: Create lightweight thumbnail to keep RAM ultra-low (supports 250+ pages)
     function createThumbnailFromCanvas(sourceCanvas, maxThumbDim = 240) {
